@@ -3,37 +3,42 @@ import json
 import os
 
 from components.profile_view import show_profile
-from components.job_feed import show_job_cards
+from components.job_feed import show_job_cards, load_saved_jobs
 from components.prompt_editor import show_prompt_editor
-
+from components.add_job import add_job
+from components.view_job import show_view_job
 
 # Load profile
 def load_profile():
     with open("profile.json", "r") as f:
         return json.load(f)
 
-# Load mock jobs
-def load_mock_jobs():
-    with open("mock_data/sample_jobs.json", "r") as f:
-        return json.load(f)
-
-
 # UI Layout
 def main():
     st.set_page_config(page_title="JobHunter.AI", layout="wide")
-    st.title("🔎 JobHunter.AI")
+    st.sidebar.title("🔍 JobHunter.AI")
 
     profile = load_profile()
-    jobs = load_mock_jobs()
 
-    PAGES = ["Job Feed", "Prompt Settings"]
-    page = st.sidebar.selectbox("🔧 Navigation", PAGES)
+    # Handle dynamic view job session route
+    if "view_job_path" in st.session_state and st.session_state["view_job_path"]:
+        page = "View Job"
+    else:
+        PAGES = ["Add Job", "Job Feed", "Prompt Settings"]
+        default_page = st.session_state.get("selected_page", PAGES[0])
+        page = st.sidebar.selectbox("🔧 Navigation", PAGES, index=PAGES.index(default_page))
+        st.session_state["selected_page"] = page
 
-    if page == "Job Feed":
+    if page == "Add Job":
+        add_job(profile)
+    elif page == "Job Feed":
         show_profile(profile)
+        jobs = load_saved_jobs()
         show_job_cards(jobs, profile)
     elif page == "Prompt Settings":
         show_prompt_editor()
+    elif page == "View Job":
+        show_view_job(profile)
 
 if __name__ == "__main__":
     main()

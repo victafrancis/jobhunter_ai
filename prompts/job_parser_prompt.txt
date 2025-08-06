@@ -1,0 +1,21 @@
+You are a job parser AI. Given the raw job description below, extract the following fields and return them as a valid JSON object:
+
+- Job Title [job_title]
+- Company Name [company]
+- Location [location]
+- Remote/Hybrid/Onsite [work_location]
+- Salary Range [salary] (if any)
+- Job Type [job_type] (Full-time, Part-time, Contract)
+- Required Skills [required_skills] (list each individual skill. For example, if you seem something like "Frontend: Next.js 15, TypeScript, Tailwind CSS, Shadcn/UI, Zustand, React Hook Form", include everything as ["Next.js 15", "TypeScript", ...])
+- Nice-to-Have Skills [nice_to_have_skills] (list)
+- Summary [summary] (2-3 lines)
+- Responsibilities [responsibilities] (list)
+- Qualifications [qualifications] (list)
+- Job URL [url] use this: {job_url}
+
+Return only the JSON. Do not include any explanation or commentary.
+
+Job Description:
+---
+{raw_text}
+---

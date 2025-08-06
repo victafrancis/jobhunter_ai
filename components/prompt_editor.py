@@ -2,7 +2,7 @@ import streamlit as st
 import os
 
 def show_prompt_editor():
-    st.subheader("🧠 Prompt Templates")
+    st.subheader("🧠 System Prompt Templates")
     tabs = st.tabs(["Cover Letter", "Resume"])
 
     # cover letter tab
@@ -13,7 +13,7 @@ def show_prompt_editor():
         else:
             with open(path) as f:
                 cover = f.read()
-            updated = st.text_area("Cover Letter Prompt", cover, height=300)
+            updated = st.text_area("Cover Letter System Prompt", cover, height=300)
             if st.button("Save Cover Prompt"):
                 with open(path, "w") as f:
                     f.write(updated)
@@ -27,7 +27,7 @@ def show_prompt_editor():
         else:
             with open(path) as f:
                 resume = f.read()
-            updated = st.text_area("Resume Prompt", resume, height=300)
+            updated = st.text_area("Resume System Prompt", resume, height=300)
             if st.button("Save Resume Prompt"):
                 with open(path, "w") as f:
                     f.write(updated)

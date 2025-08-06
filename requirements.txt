@@ -6,3 +6,5 @@ streamlit-quill
 python-dotenv
 reportlab
 pandas
+beautifulsoup4
+pdfkit
