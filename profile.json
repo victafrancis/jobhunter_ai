@@ -1,0 +1,12 @@
+{
+  "name": "Alex Johnson",
+  "title": "Full Stack Developer",
+  "location": "Barrie, ON",
+  "skills": ["Python", "C#", ".NET", "SQL", "AWS Lambda", "REST APIs"],
+  "preferences": {
+    "remote": true,
+    "hybrid": true,
+    "onsite": false,
+    "job_titles": ["Backend Developer", "Full Stack Developer", "Data Engineer"]
+  }
+}

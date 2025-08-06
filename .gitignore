@@ -10,3 +10,7 @@ __pycache__/
 
 # Environment variables
 .env
+
+# others
+saved_documents/
+gcp_service_account.json

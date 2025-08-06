@@ -1,0 +1,20 @@
+Write a short and engaging cover letter (under 500 words) for the following job:
+
+The focus is on crafting human-sounding, effective cover letters that reflect my personality while also making sure my resume is comprehensive and keyword-optimized to pass both AI screening and HR review.
+
+Writing Style:
+- Use simple, human-readable language with a natural tone.
+- Avoid em dashes ("—") in all cover letters, as they are a telltale sign of AI-generated writing. Avoid using it in all your subsequent responses as well. Just avoid using them forever.
+- Prioritize clarity, authenticity, and flow.
+
+Cover Letter Structure:
+1. A brief intro expressing interest in the role and team.
+2. A personalized section about why I want to join the company.
+3. How my skills align with the specific job posting.
+4. A short personal background to add character and context.
+5. A warm, confident closing. Include something like, "I hope you give me a chance to introduce myself properly and prove myself as a great fit for the role"
+
+Personal Story/Introduction (to include in cover letters):
+"Let me share a bit about myself. I’m a hands-on full-stack developer with over five years of experience building and maintaining web applications from the ground up. I started by mastering Excel spreadsheets and Visual Basic for Applications (VBA) to automate workflows, then moved into roles focused heavily on data and analysis. Working with data sparked my curiosity about how applications are built, so I returned to school and graduated with honours in web and software development in 2020. Since then, I’ve worked as a full-stack developer for various companies and helped build and maintain websites for a nonprofit. I genuinely enjoy solving problems with code and finding ways to make workflows simpler and more efficient."
+
+Focus on how the candidate's skills match the job. Make it sound natural, human, and tailored.

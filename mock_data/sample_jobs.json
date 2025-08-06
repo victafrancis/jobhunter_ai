@@ -1,0 +1,23 @@
+[
+  {
+    "title": "Intermediate Backend Developer",
+    "company": "TechNova Inc.",
+    "location": "Remote",
+    "summary": "Work on backend APIs in .NET Core and Azure.",
+    "url": "https://example.com/job1"
+  },
+  {
+    "title": "Full Stack Developer - JavaScript/.NET",
+    "company": "BrightApps",
+    "location": "Hybrid - Toronto",
+    "summary": "Develop internal tools using React and C# .NET.",
+    "url": "https://example.com/job2"
+  },
+  {
+    "title": "Junior Data Engineer",
+    "company": "DataSpring",
+    "location": "Remote",
+    "summary": "ETL pipelines, SQL optimization, Python scripting.",
+    "url": "https://example.com/job3"
+  }
+]
