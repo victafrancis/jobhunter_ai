@@ -13,6 +13,6 @@ My Location: {{candidate_location}}
 My Skills: {{skills}}
 
 Write the resume as plain text. 
-Use uppercase section headers (e.g. “SUMMARY”, “EXPERIENCE”).
-Show bullet points using a leading hyphen (`-`), but do not include any markdown fences, HTML tags, or code blocks.
+Use uppercase and bold section headers (e.g. SUMMARY, EXPERIENCE).
+Show bullet points using a leading hyphen ("-"), but do not include any markdown fences, HTML tags, or code blocks.
 Keep it under two pages when rendered to PDF.
