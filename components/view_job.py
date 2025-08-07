@@ -1,17 +1,35 @@
 import streamlit as st
 import json
 import os
+from services.google_docs_utils import create_google_doc_from_html
 from services.gpt_utils import match_profile_to_job, generate_cover_letter, generate_resume
+from services.sheets_tracker import log_application
 from utils.file_utils import load_cover_letter_prompt_template, load_resume_prompt_template
-from services.pdf_utils import export_cover_letter_pdf, export_resume_pdf
 from streamlit_quill import st_quill
+from config import GOOGLE_DRIVE_FOLDERS
+from datetime import datetime
+
+def save_job_json(job: dict, path: str):
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(job, f, indent=2)
+
+def clear_job_session_state():
+    for key in [
+        "view_cl",
+        "view_res",
+        "cover_letter_url",
+        "resume_url",
+        "last_viewed_job"
+    ]:
+        st.session_state.pop(key, None)
 
 def show_view_job(profile: dict):
     col1, col2 = st.columns([1, 8])
     with col1:
         if st.button("← Back", key="back_to_feed_top"):
+            clear_job_session_state()
             st.session_state.pop("view_job_path", None)
-            st.session_state["selected_page"] = "Job Feed"
+            st.session_state["selected_page"] = "Saved Jobs"
             st.rerun()
     with col2:
         st.header("🔎 View Job Details")
@@ -19,12 +37,18 @@ def show_view_job(profile: dict):
 
     path = st.session_state.get("view_job_path")
     if not path or not os.path.exists(path):
-        st.warning("No job selected. Go back to Job Feed to pick one.")
+        st.warning("No job selected. Go back to Saved Jobs to pick one.")
         if st.button("← Back"):
+            clear_job_session_state()
             st.session_state.pop("view_job_path", None)
-            st.session_state["selected_page"] = "Job Feed"  # manually set next page
+            st.session_state["selected_page"] = "Saved Jobs"  # manually set next page
             st.rerun()
         return
+
+    # Clear session state if viewing a different job than before
+    if st.session_state.get("last_viewed_job") != path:
+        clear_job_session_state()
+        st.session_state["last_viewed_job"] = path
 
     with open(path, "r", encoding="utf-8") as f:
         job = json.load(f)
@@ -77,7 +101,7 @@ def show_view_job(profile: dict):
     # match score
     col1, col2 = st.columns([1, 3])
     col1.markdown("**Match Score**")
-    col2.metric("", f"{match.get('match_score', 0)}%")
+    col2.metric(" ", f"{match.get('match_score', 0)}%")  # one space avoids warning
 
     # missing skills
     col1, col2 = st.columns([1, 3])
@@ -102,41 +126,109 @@ def show_view_job(profile: dict):
                 .replace("{{skills}}", ", ".join(profile["skills"]))
         )
 
-    # --- Generate Buttons ---
-    st.markdown("### ✨ Generate Application Documents")
+    # --- Generate or View Application Documents ---
+    st.markdown("### ✨ Application Documents")
     col1, col2 = st.columns([1, 1])
 
+    # Cover Letter column
     with col1:
-        if st.button("✍️ Generate Cover Letter", key="gen_cl"):
-            st.session_state["view_cl"] = generate_cover_letter(
-                build_prompt(load_cover_letter_prompt_template),
-                company=job["company"]
-            )
+        if job.get("cover_letter_url"):
+            st.markdown(f"[📄 Go to Cover Letter ↗]({job['cover_letter_url']})")
+            if st.button("🔄 Regenerate Cover Letter", key="regen_cl"):
+                with st.spinner("Regenerating cover letter..."):
+                    cl = generate_cover_letter(build_prompt(load_cover_letter_prompt_template), company=job["company"])
+                    st.session_state["view_cl"] = cl
+                    # clear old URL so user re-exports
+                    job.pop("cover_letter_url", None)
+                    save_job_json(job, path)
+        else:
+            if st.button("✍️ Generate Cover Letter", key="gen_cl"):
+                with st.spinner("Generating cover letter..."):
+                    cl = generate_cover_letter(build_prompt(load_cover_letter_prompt_template), company=job["company"])
+                    st.session_state["view_cl"] = cl
+                    # save raw in session, JSON stays until export
 
+    # Resume column
     with col2:
-        if st.button("✍️ Generate Resume", key="gen_res"):
-            st.session_state["view_res"] = generate_resume(
-                build_prompt(load_resume_prompt_template),
-                company=job["company"]
-            )
+        if job.get("resume_url"):
+            st.markdown(f"[📄 Go to Resume ↗]({job['resume_url']})")
+            if st.button("🔄 Regenerate Resume", key="regen_res"):
+                with st.spinner("Regenerating resume..."):
+                    res = generate_resume(build_prompt(load_resume_prompt_template), company=job["company"])
+                    st.session_state["view_res"] = res
+                    job.pop("resume_url", None)
+                    save_job_json(job, path)
+        else:
+            if st.button("✍️ Generate Resume", key="gen_res"):
+                with st.spinner("Generating resume..."):
+                    res = generate_resume(build_prompt(load_resume_prompt_template), company=job["company"])
+                    st.session_state["view_res"] = res
 
     # --- Cover Letter Editor ---
     if st.session_state.get("view_cl"):
         with st.expander("📝 Edit Cover Letter", expanded=True):
             edited_cl = st_quill(st.session_state["view_cl"], html=True, key="view_quill_cl")
-            if st.button("📄 Export Cover Letter PDF", key="export_cl"):
-                path = export_cover_letter_pdf(edited_cl, job["job_title"], job["company"])
-                st.success(f"📁 Saved to: `{path}`")
+            if st.button("📄 Export to Google Docs", key="export_cl"):
+                with st.spinner("Exporting to Google Docs..."):
+                    company = job.get("company", "UnknownCompany")
+                    job_title = job.get("job_title", "UnknownJob")
+                    doc_title = f"{company}_{job_title}_Cover_Letter"
+                try:
+                    cover_letter_folder_id = GOOGLE_DRIVE_FOLDERS["cover_letters"]
+                    cl_url = create_google_doc_from_html(edited_cl, doc_title, folder_id=cover_letter_folder_id)
+                    # save url to job JSON
+                    job["cover_letter_url"] = cl_url
+                    save_job_json(job, path)
+                    st.session_state["cover_letter_url"] = cl_url
+                    st.success(f"✅ [Click here to open in Google Docs ↗]({cl_url})")
+                except Exception as e:
+                    st.error(f"Export failed: {e}")
 
     # --- Resume Editor ---
     if st.session_state.get("view_res"):
         with st.expander("📝 Edit Resume", expanded=True):
             edited_res = st_quill(st.session_state["view_res"], html=True, key="view_quill_res")
-            if st.button("📄 Export Resume PDF", key="export_res"):
-                path = export_resume_pdf(edited_res, job["job_title"], job["company"])
-                st.success(f"📁 Saved to: `{path}`")
+            if st.button("📄 Export to Google Docs", key="export_res"):
+                with st.spinner("Exporting resume to Google Docs..."):
+                    company = job.get("company", "UnknownCompany")
+                    job_title = job.get("job_title", "UnknownJob")
+                    doc_title = f"{company}_{job_title}_Resume"
+                try:
+                    resume_folder_id = GOOGLE_DRIVE_FOLDERS["resumes"]
+                    res_url = create_google_doc_from_html(edited_res, doc_title, folder_id=resume_folder_id)
+                    # Save URL to job JSON
+                    job["resume_url"] = res_url
+                    save_job_json(job, path)
+                    st.session_state["resume_url"] = res_url
+                    st.success(f"✅ [Click here to open in Google Docs ↗]({res_url})")
+                except Exception as e:
+                    st.error(f"Export failed: {e}")
 
+    # --- Log to Google Sheets & mark as applied ---
+    if st.button("➕ Add to Google Sheets", key="add_to_sheets"):
+        with st.spinner("Logging application to Google Sheets..."):
+            # grab whatever URLs exist (or empty string)
+            cl_url = st.session_state.get("cover_letter_url", "")
+            res_url = st.session_state.get("resume_url", "")
+
+            # 1) Log to Sheets
+            log_application(
+                job["job_title"],
+                job["company"],
+                job["url"],
+                resume_path=res_url,
+                cover_letter_path=cl_url,
+                status="Applied"
+            )  # :contentReference[oaicite:0]{index=0}
+
+            # 2) Update the JSON on disk
+            job["date_applied"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            with open(path, "w", encoding="utf-8") as f:
+                json.dump(job, f, indent=2)
+
+            st.success(f"✅ Logged and marked as applied on {job['date_applied']}")
 
     if st.button("← Back to Saved Jobs"):
+        clear_job_session_state()
         st.session_state.pop("view_job_path", None)
         st.rerun()

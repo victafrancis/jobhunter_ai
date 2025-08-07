@@ -1,16 +1,29 @@
-# Ignore virtual environment
+# Virtual environment
 venv/
 
-# Python cache
+# Python bytecode cache
 __pycache__/
-*.pyc
+*.py[cod]
+*.pyo
 
-# Streamlit app state
+# Streamlit state/config
 .streamlit/
 
-# Environment variables
+# Environment and secrets
 .env
-
-# others
-saved_documents/
+credentials.json
+token.pickle
 gcp_service_account.json
+
+# Generated documents
+saved_documents/
+
+# Job data — stored locally, not committed
+data/jobs/*
+!data/jobs/.gitkeep
+
+# Logs, backups, and editor folders (optional)
+*.log
+*.bak
+.vscode/
+.idea/

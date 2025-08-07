@@ -24,14 +24,14 @@ def main():
     if "view_job_path" in st.session_state and st.session_state["view_job_path"]:
         page = "View Job"
     else:
-        PAGES = ["Add Job", "Job Feed", "Prompt Settings"]
+        PAGES = ["Add Job", "Saved Jobs", "Prompt Settings"]
         default_page = st.session_state.get("selected_page", PAGES[0])
         page = st.sidebar.selectbox("🔧 Navigation", PAGES, index=PAGES.index(default_page))
         st.session_state["selected_page"] = page
 
     if page == "Add Job":
         add_job(profile)
-    elif page == "Job Feed":
+    elif page == "Saved Jobs":
         show_profile(profile)
         jobs = load_saved_jobs()
         show_job_cards(jobs, profile)

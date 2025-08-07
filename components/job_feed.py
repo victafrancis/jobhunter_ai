@@ -1,6 +1,7 @@
 import os
 import json
 import streamlit as st
+from datetime import datetime
 
 JOBS_FOLDER = "data/jobs"
 
@@ -19,14 +20,39 @@ def load_saved_jobs(folder=JOBS_FOLDER):
 def show_job_cards(jobs, profile):
     st.header("🗃️ Saved Jobs")
 
+    if "sort_order" not in st.session_state:
+        st.session_state["sort_order"] = "Newest"
+    if "job_filter" not in st.session_state:
+        st.session_state["job_filter"] = "All Jobs"
+
+    # sort and filter options
+    col1, col2 = st.columns([1, 2])
+    with col1:
+        sort_order = st.radio("Sort by", ["Newest", "Oldest"], horizontal=True, key="sort_order")
+    with col2:
+        filter_option = st.radio("Filter", ["All Jobs", "Applied Only"], horizontal=True, key="job_filter")
+
     if not jobs:
         st.info("No saved jobs yet. Add one on the 'Add Job' page.")
         return
+    
+    # Filter
+    if filter_option == "Applied Only":
+        jobs = [job for job in jobs if job.get("date_applied")]
+
+    # Sort
+    def job_sort_key(job):
+        return job.get("date_saved", "1970-01-01")
+    jobs = sorted(jobs, key=job_sort_key, reverse=(sort_order == "Newest"))
 
     for idx, job in enumerate(jobs):
         with st.container(border=True):
+            # show applied badge if set
+            if job.get("date_applied"):
+                st.markdown(f"✅ **Applied on {job['date_applied']}**")
+
             st.subheader(f"{job.get('job_title')} at {job.get('company')}")
-            st.markdown(f"📍 {job.get('location', 'N/A')}  |  💼 {job.get('job_type', 'N/A')}")
+            st.markdown(f"📍 {job.get('location', 'N/A')}  |  {job.get('work_location', 'N/A')}")
             st.write(job.get("summary", "")[:400] + "...")
 
             col1, col2 = st.columns(2)
