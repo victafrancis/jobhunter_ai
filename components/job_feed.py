@@ -42,7 +42,7 @@ def show_job_cards(jobs, profile):
 
     # Sort
     def job_sort_key(job):
-        return job.get("date_saved", "1970-01-01")
+        return job.get("date_added", "1970-01-01")
     jobs = sorted(jobs, key=job_sort_key, reverse=(sort_order == "Newest"))
 
     for idx, job in enumerate(jobs):

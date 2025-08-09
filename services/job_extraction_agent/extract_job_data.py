@@ -1,38 +1,32 @@
+# extract_job_data.py
 import os
 import json
-from utils.gpt_utils import client
+from utils.ai.openai_client import call_gpt
 from utils.prompt_loader import load_prompt
 
 def clean_job_text(raw_text: str) -> str:
     prompt = load_prompt("job_extraction_agent", "cleaner_prompt.txt")
     prompt = prompt.replace("{raw_text}", raw_text)
 
-    response = client.chat.completions.create(
-        model="gpt-5-mini",
-        messages=[{"role": "user", "content": prompt}],
+    text, meta = call_gpt(
+        task="summarize",
+        messages=[{"role": "user", "content": prompt}]
     )
-    return response.choices[0].message.content.strip()
-
+    print(f"[CleanText] tokens={meta['total_tokens']} cost=${meta['cost_usd']}")
+    return text.strip()
 
 def extract_job_info(clean_text: str, job_url: str = None) -> dict:
-    prompt = load_prompt("job_extraction_agent", "job_extractor_prompt.txt")
-    prompt = prompt.replace("{clean_text}", clean_text).replace("{job_url}", job_url or "")
+    tmpl = load_prompt("job_extraction_agent", "job_extractor_prompt.txt")
+    prompt = tmpl.replace("{clean_text}", clean_text).replace("{job_url}", job_url or "")
 
     try:
-        resp = client.chat.completions.create(
-            model="gpt-5",
+        text, meta = call_gpt(
+            task="extract",
             messages=[{"role": "user", "content": prompt}],
-            response_format={"type": "json_object"},
-            max_completion_tokens=3000
+            response_format={"type": "json_object"}
         )
-
-        # Optional debug
-        usage = getattr(resp, "usage", None)
-        if usage:
-            print(f"[ExtractJob] tokens prompt={usage.prompt_tokens} completion={usage.completion_tokens}")
-
-        content = (resp.choices[0].message.content or "").strip()
-        return json.loads(content) if content else {}
+        print(f"[ExtractJob] tokens={meta['total_tokens']} cost=${meta['cost_usd']} model={meta['model']}")
+        return json.loads(text) if text else {}
     except Exception as e:
         print("[ExtractJob] error:", e)
         return {}
@@ -40,51 +34,52 @@ def extract_job_info(clean_text: str, job_url: str = None) -> dict:
 def _dedupe_preserve_order(items):
     if not isinstance(items, list):
         return items
-    seen = set()
-    out = []
+    seen, out = set(), []
     for x in items:
         if x not in seen:
             seen.add(x)
             out.append(x)
     return out
 
-
 def review_and_patch_job_data(clean_text: str, job_data: dict) -> dict:
     """
-    Uses gpt-3.5-turbo to re-scan cleaned text and only ADD missing items to job_data.
-    Never removes existing items. Returns updated dict.
+    Re-scan cleaned text and only ADD missing items to job_data.
+    Never removes existing items.
     """
     try:
         template = load_prompt("job_extraction_agent", "reviewer_prompt.txt")
         current_json = json.dumps(job_data, ensure_ascii=False)
-        prompt = (
-            template
-            .replace("{clean_text}", clean_text)
-            .replace("{current_json}", current_json)
-        )
+        prompt = template.replace("{clean_text}", clean_text).replace("{current_json}", current_json)
 
-        response = client.chat.completions.create(
-            model="gpt-5-mini",
+        text, meta = call_gpt(
+            task="review_extracted_job",
             messages=[{"role": "user", "content": prompt}],
-            max_completion_tokens=3000
+            response_format={"type": "json_object"}
         )
-        content = response.choices[0].message.content.strip()
+        print(f"[Reviewer] tokens={meta['total_tokens']} cost=${meta['cost_usd']}")
 
-        try:
-            patched = json.loads(content)
-        except json.JSONDecodeError:
-            cleaned = content.strip("```json").strip("```").strip()
-            patched = json.loads(cleaned)
+        patched = {}
+        if text.strip():
+            try:
+                patched = json.loads(text)
+            except json.JSONDecodeError:
+                s = text.strip().strip("```json").strip("```").strip()
+                from re import search, DOTALL
+                m = search(r"\{.*\}", s, DOTALL)
+                if m:
+                    patched = json.loads(m.group(0))
 
-        # Safety: dedupe lists we care about
+        # safety dedupe
         for key in ["required_skills", "nice_to_have_skills", "responsibilities", "qualifications"]:
-            if key in patched:
-                patched[key] = _dedupe_preserve_order(patched[key])
+            if key in patched and isinstance(patched[key], list):
+                seen, out = set(), []
+                for x in patched[key]:
+                    if x not in seen:
+                        seen.add(x); out.append(x)
+                patched[key] = out
 
         return patched
-
     except Exception as e:
-        # If reviewer fails for any reason, return original with a note
         job_data.setdefault("_review_notes", {})
         job_data["_review_notes"]["error"] = str(e)
         return job_data

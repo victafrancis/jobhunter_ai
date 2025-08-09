@@ -7,11 +7,35 @@ from components.job_feed import show_job_cards, load_saved_jobs
 from components.prompt_editor import show_prompt_editor
 from components.add_job import add_job
 from components.view_job import show_view_job
+from utils.config.settings import load_settings, save_settings
 
 # Load profile
 def load_profile():
     with open("profile.json", "r") as f:
         return json.load(f)
+    
+# initialize settings
+if "settings" not in st.session_state:
+    st.session_state["settings"] = load_settings()
+
+# function to set developer mode
+def set_dev_mode(value: bool):
+    s = st.session_state["settings"]
+    s["developer_mode"] = bool(value)
+    save_settings(s)
+    st.session_state["settings"] = s
+
+# initialize developer mode toggle
+with st.sidebar:
+    st.caption("Settings")
+    dev_mode = st.toggle(
+        "Developer mode",
+        value=st.session_state["settings"]["developer_mode"],
+        help="Force cheapest models everywhere"
+    )
+    if dev_mode != st.session_state["settings"]["developer_mode"]:
+        set_dev_mode(dev_mode)
+    st.write("🟢 Dev mode ON" if dev_mode else "⚪ Dev mode OFF")
 
 # UI Layout
 def main():

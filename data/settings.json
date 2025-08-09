@@ -1,0 +1,11 @@
+{
+  "developer_mode": true,
+  "preferred_models": {
+    "extract": "gpt-5",
+    "summarize": "gpt-5",
+    "cover_letter": "gpt-5",
+    "resume": "gpt-5",
+    "cheap_fallback": "gpt-5-nano",
+    "review_extracted_job": "gpt-5-mini"
+  }
+}

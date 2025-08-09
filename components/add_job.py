@@ -3,7 +3,7 @@ from services.job_parser import fetch_job_text
 from utils.gpt_utils import match_profile_to_job
 from services.save_job import save_job
 from services.job_extraction_agent.run_chain import run_job_extraction_chain
-from services.skill_matching_agent.run_chain import score_job_fit
+from services.skill_matching_agent.score_job_fit import score_job_fit
 
 def add_job(profile: dict):
     """

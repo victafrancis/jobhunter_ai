@@ -21,6 +21,7 @@ JSON:
 - Responsibilities [responsibilities] (list)
 - Qualifications [qualifications] (list)
 - Job URL [url]
+- Notes [notes]
 
 CLEANED TEXT:
 {clean_text}

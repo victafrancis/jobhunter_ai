@@ -6,7 +6,7 @@ from services.google_docs_utils import create_google_doc_from_html
 from utils.gpt_utils import match_profile_to_job, generate_cover_letter, generate_resume
 from services.sheets_tracker import log_application
 from streamlit_quill import st_quill
-from config import GOOGLE_DRIVE_FOLDERS
+from utils.config.config import GOOGLE_DRIVE_FOLDERS, SHEETS_URL
 from datetime import datetime
 
 def save_job_json(job: dict, path: str):
@@ -68,6 +68,9 @@ def show_view_job(profile: dict):
         "Job Type": job.get("job_type", "—"),
         "Summary": job.get("summary", "—"),
         "URL": job.get("url", "—"),
+        "Notes": job.get("notes", "—"),
+        "Date Added": job.get("date_added", "—"),
+        "Date Applied": job.get("date_applied", "—"),
     }
 
     # render each basic field
@@ -260,28 +263,33 @@ def show_view_job(profile: dict):
                     st.error(f"Export failed: {e}")
 
     # --- Log to Google Sheets & mark as applied ---
-    if st.button("➕ Add to Google Sheets", key="add_to_sheets"):
-        with st.spinner("Logging application to Google Sheets..."):
-            # grab whatever URLs exist (or empty string)
-            cl_url = st.session_state.get("cover_letter_url", "")
-            res_url = st.session_state.get("resume_url", "")
+    if job.get("sheets_logged"):
+        st.success("✅ Already logged to Google Sheets for this job.")
+        # Show a link button and a plain link for redundancy
+        st.link_button("↗ Open in Google Sheets", SHEETS_URL, help="Open your application tracker")
+    else:
+        if st.button("➕ Add to Google Sheets", key="add_to_sheets"):
+            with st.spinner("Logging application to Google Sheets..."):
+                cl_url = st.session_state.get("cover_letter_url", "")
+                res_url = st.session_state.get("resume_url", "")
 
-            # 1) Log to Sheets
-            log_application(
-                job["job_title"],
-                job["company"],
-                job["url"],
-                resume_path=res_url,
-                cover_letter_path=cl_url,
-                status="Applied"
-            )  # :contentReference[oaicite:0]{index=0}
+                # Log to Sheets
+                log_application(
+                    job.get("job_title", ""),
+                    job.get("company", ""),
+                    job.get("url", ""),
+                    resume_path=res_url,
+                    cover_letter_path=cl_url,
+                    status="Applied"
+                )
 
-            # 2) Update the JSON on disk
-            job["date_applied"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            with open(path, "w", encoding="utf-8") as f:
-                json.dump(job, f, indent=2)
+                # Save a simple flag and the global sheet link
+                job["sheets_logged"] = True
+                job["date_applied"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                save_job_json(job, path)
 
-            st.success(f"✅ Logged and marked as applied on {job['date_applied']}")
+                st.success(f"✅ Logged and marked as applied on {job['date_applied']}")
+                st.link_button("↗ Open in Google Sheets", SHEETS_URL)
 
     if st.button("← Back to Saved Jobs"):
         clear_job_session_state()

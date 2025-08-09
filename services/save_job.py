@@ -8,7 +8,7 @@ def save_job(job_data: dict):
 
     # add timestamp fields
     now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    job_data["date_saved"] = now
+    job_data["date_added"] = now
     job_data.setdefault("date_applied", "")  # blank until applied
 
     title   = job_data.get("job_title", "untitled").replace(" ", "_")
