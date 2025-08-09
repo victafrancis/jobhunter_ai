@@ -1,12 +1,214 @@
 {
   "name": "Francis Victa",
   "title": "Full Stack Developer",
-  "location": "Barrie, ON",
-  "skills": ["Python", "C#", ".NET", "SQL", "AWS Lambda", "REST APIs"],
+  "contact": {
+    "email": "francisvicta45@gmail.com",
+    "phone": "416-832-1771",
+    "linkedin": "https://www.linkedin.com/in/francisvicta/",
+    "github": "https://github.com/victafrancis",
+    "website": "http://www.francisvicta.com"
+  },
+  "location": "Barrie, ON, Canada",
   "preferences": {
     "remote": true,
     "hybrid": true,
     "onsite": false,
-    "job_titles": ["Backend Developer", "Full Stack Developer", "Data Engineer"]
-  }
+    "job_titles": [
+      "Backend Developer",
+      "Full Stack Developer",
+      "Data Engineer",
+      "Software Developer"
+    ]
+  },
+  "summary": "Hands-on developer with 5+ years of experience in backend systems, REST APIs, and SQL databases, plus 7+ years in data management and analysis. Passionate about building scalable solutions that solve real problems. Fast learner, highly adaptable, and knowledgeable in software development best practices, object-oriented design, and Agile methodologies.",
+  "traits": [
+    "Willing to learn and apply new technologies quickly",
+    "Fast and adaptive learner",
+    "Organized and self-motivated",
+    "Advanced problem solving and troubleshooting skills",
+    "Strong understanding of software development best practices",
+    "Familiar with object-oriented programming principles",
+    "Experience with Agile methodologies and collaborative workflows",
+    "Strong communicator and team player",
+    "Able to break down complex problems into manageable solutions",
+    "Experience with AI-driven workflows and AI systems integration"
+  ],
+  "skills": [
+    "C#",
+    "ASP.NET",
+    "Node.js",
+    "Express",
+    "Python",
+    "Django",
+    "Flask",
+    "JavaScript",
+    "TypeScript",
+    "React",
+    "Next.js",
+    "HTML",
+    "CSS",
+    "Bootstrap",
+    "MaterialUI",
+    "SQL",
+    "MSSQL",
+    "MySQL",
+    "PostgreSQL",
+    "MongoDB",
+    "Mongoose",
+    "Redis",
+    "NeonDB",
+    "RESTful APIs",
+    "Microservices",
+    "ETL",
+    "Git",
+    "Docker",
+    "JIRA",
+    "Unit Testing",
+    "Agile Methodologies",
+    "AWS (EC2, Lambda, RDS)",
+    "Google Cloud Platform",
+    "Heroku",
+    "Streamlit",
+    "AI systems integration",
+    "AI API integration",
+    "LLM integration",
+    "OpenAI API",
+    "CI/CD"
+  ],
+  "work_experience": [
+    {
+      "position": "Full Stack Developer, Backend Focus",
+      "company": "LabX Media Group",
+      "location": "Midland, ON",
+      "start_date": "2021-04",
+      "end_date": "2025-07",
+      "responsibilities": [
+        "Updated internal front-end UI using React and Next.js",
+        "Managed MSSQL and MySQL databases",
+        "Developed AWS Lambda functions for IP logging microservices",
+        "Implemented Redis caching to optimize data fetching",
+        "Delivered end-to-end features based on stakeholder requirements",
+        "Integrated AI-driven content tools using the OpenAI API"
+      ],
+      "achievements": [
+        "Enhanced user IP tracking and marketing insights via the IP logging service",
+        "Reduced database load and improved data fetch performance with Redis caching",
+        "Boosted content engagement by integrating AI-generated click-bait titles",
+        "Maintained a 100% on-time delivery rate for stakeholder-requested features"
+      ]
+    },
+    {
+      "position": "Project Lead, Full Stack Developer",
+      "company": "Backr.ai",
+      "location": "Toronto, ON",
+      "start_date": "2020-11",
+      "end_date": "2021-03",
+      "responsibilities": [
+        "Developed serverless microservices using Google Cloud Functions for email and data ingestion",
+        "Managed application deployment on Google Cloud Platform",
+        "Designed and implemented ETL pipelines to process YouTube data into PostgreSQL"
+      ],
+      "achievements": [
+        "Streamlined data ingestion workflows, reducing manual processing time",
+        "Improved system scalability by leveraging GCP serverless architecture",
+        "Automated YouTube data ETL processes for in-house analysis"
+      ]
+    },
+    {
+      "position": "Full Stack Engineer, Tech Lead",
+      "company": "Tender Plant and Care",
+      "location": "Toronto, ON",
+      "start_date": "2020-08",
+      "end_date": "2021-08",
+      "responsibilities": [
+        "Deployed backend REST services on AWS EC2 and hosted frontend on AWS Amplify",
+        "Established development, staging, and production environments",
+        "Implemented Google OAuth for secure user authentication",
+        "Incorporated warehouse inventory management best practices into app design"
+      ],
+      "achievements": [
+        "Improved operational efficiency by enabling tracking and management of hundreds of products",
+        "Enhanced user satisfaction through iterative feature improvements based on feedback",
+        "Ensured reliable deployments and environment consistency across all environments"
+      ]
+    },
+    {
+      "position": "Project Manager and Database Support",
+      "company": "George Brown College",
+      "location": "Toronto, ON",
+      "start_date": "2018-09",
+      "end_date": "2020-04",
+      "responsibilities": [
+        "Managed MS Access database projects and internal dashboards",
+        "Automated data visualizations in Access and Tableau",
+        "Authored SQL scripts for data extraction and transformation",
+        "Applied statistical methods such as regression analysis for data interpretation"
+      ],
+      "achievements": [
+        "Reduced manual reporting effort by 75% through automation",
+        "Delivered data insights that informed key academic decisions",
+        "Maintained 99% uptime on internal dashboards"
+      ]
+    },
+    {
+      "position": "Project Analyst, Tier-1 Technical Support",
+      "company": "[24]7.ai",
+      "location": "Toronto, ON",
+      "start_date": "2015-06",
+      "end_date": "2017-12",
+      "responsibilities": [
+        "Provided Tier-1 technical support, handling inbound calls and issue triage",
+        "Collaborated on reporting template enhancements to improve workflows",
+        "Maintained and refined Excel-based reporting tools based on feedback"
+      ],
+      "achievements": [
+        "Reduced average issue resolution time by streamlining escalation processes",
+        "Increased team productivity by redesigning reporting templates",
+        "Automated recurring data entry tasks, saving hours of manual work"
+      ]
+    },
+    {
+      "position": "Production Operator / Production Specialist",
+      "company": "Woodbridge Foam Corporation",
+      "location": "Woodbridge, ON",
+      "start_date": "2013-11",
+      "end_date": "2015-05",
+      "responsibilities": [
+        "Operated production line machinery and maintained quality standards",
+        "Volunteered for process improvement initiatives during overtime"
+      ],
+      "achievements": [
+        "Implemented workflow improvements that increased production efficiency by 10%",
+        "Recognized by management for proactive contributions to process enhancements"
+      ]
+    }
+  ],
+  "education": [
+    {
+      "degree": "Advanced Diploma, Computer Programmer Analyst",
+      "institution": "George Brown College",
+      "location": "Toronto, ON",
+      "start_date": "2018-01",
+      "end_date": "2020-04",
+      "details": "Dean's List (GPA 3.98/4)"
+    },
+    {
+      "degree": "Bachelor of Science in Management Engineering (Honours)",
+      "institution": "Ateneo de Manila University",
+      "location": "Manila, Philippines",
+      "start_date": "2008-06",
+      "end_date": "2012-03",
+      "details": "Financial Aid Scholar, Dean's List"
+    }
+  ],
+  "projects": [
+    {
+      "title": "JobHunter AI Assistant",
+      "description": "Built a Streamlit-based job-hunting app integrating OpenAI GPT-4 API to organize applications, extract job data, generate tailored documents, and track applications in Google Sheets."
+    },
+    {
+      "title": "Personal Portfolio Website",
+      "description": "Maintained and enhanced my personal site showcasing projects, blogs, and career highlights: http://www.francisvicta.com"
+    }
+  ]
 }

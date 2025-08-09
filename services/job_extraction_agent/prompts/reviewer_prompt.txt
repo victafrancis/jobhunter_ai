@@ -1,0 +1,29 @@
+You are a JSON reviewer. Compare the CLEANED job listing text with the CURRENT JSON.
+
+Rules:
+- Do not remove any fields or items that already exist.
+- Only ADD clearly missing items, especially in required_skills, nice_to_have and qualifications.
+- Preserve existing values exactly.
+- Keep the same JSON schema and field names as provided in CURRENT JSON.
+- If Job URL exists, do not change it.
+- Return ONLY valid JSON, no commentary, no code fences.
+
+JSON:
+- Job Title [job_title]
+- Company Name [company]
+- Location [location]
+- Remote/Hybrid/Onsite [work_location]
+- Salary Range [salary] (if any)
+- Job Type [job_type] (Full-time, Part-time, Contract)
+- Required Skills [required_skills] (list each individual skill. For example, if you seem something like "Frontend: Next.js 15, TypeScript, Tailwind CSS, Shadcn/UI, Zustand, React Hook Form", include everything as ["Next.js 15", "TypeScript", "Tailwind CSS" ...])
+- Nice-to-Have Skills [nice_to_have_skills] (list skills here or anything here where the listing says "Nice to have", "strong plus", or anything similar)
+- Summary [summary] (Please generate a summary of the job, 2-3 lines)
+- Responsibilities [responsibilities] (list)
+- Qualifications [qualifications] (list)
+- Job URL [url]
+
+CLEANED TEXT:
+{clean_text}
+
+CURRENT JSON:
+{current_json}

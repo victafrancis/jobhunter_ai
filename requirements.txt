@@ -6,3 +6,4 @@ streamlit-quill
 python-dotenv
 pandas
 beautifulsoup4
+markdown2

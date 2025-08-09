@@ -1,7 +1,9 @@
 import streamlit as st
 from services.job_parser import fetch_job_text
-from services.gpt_utils import extract_job_details_with_gpt, match_profile_to_job
+from utils.gpt_utils import match_profile_to_job
 from services.save_job import save_job
+from services.job_extraction_agent.run_chain import run_job_extraction_chain
+from services.skill_matching_agent.run_chain import score_job_fit
 
 def add_job(profile: dict):
     """
@@ -20,6 +22,9 @@ def add_job(profile: dict):
     else:
         job_text = st.text_area("Paste full job description text here", height=50, key="job_text_input")
         job_url = st.text_input("Optional: Paste job URL for reference", key="job_url_ref")
+
+    # before Analyze Job button
+    force_review = st.checkbox("Run reviewer pass", value=False)
 
     if st.button("Analyze Job", key="scan_job_btn"):
         # Validate inputs
@@ -40,23 +45,17 @@ def add_job(profile: dict):
                 st.warning("Please paste the full job description text.")
                 return
 
-        # Display raw job text
-        st.subheader("📄 Raw Job Description")
-        st.text_area("Job Text", job_text, height=50)
-
         # Extract structured details via GPT
-        with st.spinner("Analyzing with AI..."):
-            print(f"🤖 [GPT] Analyzing listing..")
-            job_data = extract_job_details_with_gpt(job_text, job_url)
+        job_data = run_job_extraction_chain(job_text, job_url, force_review=force_review)
 
         # Save to session
         st.session_state["job_data"] = job_data
 
         # Match against profile
         with st.spinner("Matching against your profile..."):
-            match = match_profile_to_job(job_data, profile)
-            st.session_state["match"] = match
-            job_data.update(match)
+            match = score_job_fit(job_data, profile)
+            job_data["match"] = match
+            st.session_state["job_data"] = job_data
 
     # === Display saved data from session ===
     if "job_data" in st.session_state:

@@ -1,8 +1,9 @@
 import streamlit as st
 import json
 import os
+import markdown2
 from services.google_docs_utils import create_google_doc_from_html
-from services.gpt_utils import match_profile_to_job, generate_cover_letter, generate_resume
+from utils.gpt_utils import match_profile_to_job, generate_cover_letter, generate_resume
 from services.sheets_tracker import log_application
 from streamlit_quill import st_quill
 from config import GOOGLE_DRIVE_FOLDERS
@@ -93,31 +94,80 @@ def show_view_job(profile: dict):
 
     st.markdown("---")
 
-    # --- Profile Match Details as two-column rows ---
-    match = match_profile_to_job(job, profile)
-
-    # Build one big JSON context string for GPT user prompt
-    context_json = json.dumps({
-        "job_details":   job,
-        "profile":       profile,
-        "profile_match": match
-    }, indent=2)
+    # --- Profile Match Details ---
+    match = job.get("match", {})
 
     st.markdown("### 🤝 Profile Match Details")
-    
-    # match score
-    col1, col2 = st.columns([1, 3])
-    col1.markdown("**Match Score**")
-    col2.metric(" ", f"{match.get('match_score', 0)}%")  # one space avoids warning
 
-    # missing skills
-    col1, col2 = st.columns([1, 3])
-    col1.markdown("**Missing Skills**")
-    missing = match.get("missing_skills", [])
-    if missing:
-        col2.markdown("\n".join(f"- {s}" for s in missing))
+    if not match:
+        st.info("No match data available. Try re-running the skill matching agent.")
     else:
-        col2.markdown("None 🎉")
+        scores = match.get("scores", {})
+        col1, col2, col3 = st.columns(3)
+        col1.metric("Skill Score", f"{scores.get('skill_score', 0)}%")
+        col2.metric("Preference Score", f"{scores.get('preference_score', 0)}%")
+        col3.metric("Overall Score", f"{scores.get('overall_score', 0)}%")
+
+        # --- Skills ---
+        st.subheader("Skills Match")
+        skills_data = match.get("fit", {}).get("skills", {})
+        for skill_type, data in skills_data.items():
+            st.markdown(f"**{skill_type.replace('_', ' ').title()}**")
+            col1, col2 = st.columns(2)
+            col1.markdown("✅ Matched")
+            col1.markdown("\n".join(f"- {s}" for s in data.get("matched", [])) or "_None_")
+            col2.markdown("❌ Missing")
+            col2.markdown("\n".join(f"- {s}" for s in data.get("missing", [])) or "_None_")
+            st.markdown(f"Score: **{data.get('score', 0)}%**")
+
+        # --- Qualifications ---
+        st.subheader("Qualifications")
+        quals = match.get("fit", {}).get("qualifications", {})
+        col1, col2 = st.columns(2)
+        col1.markdown("✅ Matched")
+        col1.markdown("\n".join(f"- {q}" for q in quals.get("matched", [])) or "_None_")
+        col2.markdown("❌ Missing")
+        col2.markdown("\n".join(f"- {q}" for q in quals.get("missing", [])) or "_None_")
+        st.markdown(f"Score: **{quals.get('score', 0)}%**")
+
+        # --- Responsibilities evidence ---
+        st.subheader("Responsibilities Evidence")
+        resp_data = match.get("fit", {}).get("responsibilities", {})
+        confidence = resp_data.get("confidence", 0)
+        st.markdown(f"**Coverage Confidence:** {confidence}%")
+        for r in resp_data.get("evidence", []):
+            st.markdown(f"- **{r.get('resp', '')}** → _{r.get('evidence', '')}_")
+
+        # --- Analysis ---
+        st.subheader("Analysis")
+        analysis = match.get("analysis", {})
+        st.markdown("**Strengths**")
+        st.markdown("\n".join(f"- {s}" for s in analysis.get("strengths", [])) or "_None_")
+        st.markdown("**Gaps**")
+        st.markdown("\n".join(f"- {g}" for g in analysis.get("gaps", [])) or "_None_")
+        st.markdown("**Fast Upskill Suggestions**")
+        st.markdown("\n".join(f"- {u}" for u in analysis.get("fast_upskill_suggestions", [])) or "_None_")
+
+        # --- Doc recommendations ---
+        st.subheader("Document Recommendations")
+        doc_recs = match.get("doc_recommendations", {})
+        cl_recs = doc_recs.get("cover_letter", {})
+        res_recs = doc_recs.get("resume", {})
+
+        with st.expander("📄 Cover Letter Recommendations", expanded=False):
+            st.markdown("**Highlights**")
+            st.markdown("\n".join(f"- {h}" for h in cl_recs.get("highlights", [])) or "_None_")
+            st.markdown("**Address Gaps**")
+            st.markdown("\n".join(f"- {a}" for a in cl_recs.get("address_gaps", [])) or "_None_")
+            st.markdown(f"**Tone:** {cl_recs.get('tone', 'N/A')}")
+
+        with st.expander("📄 Resume Recommendations", expanded=False):
+            st.markdown("**Reorder Suggestions**")
+            st.markdown("\n".join(f"- {r}" for r in res_recs.get("reorder_suggestions", [])) or "_None_")
+            st.markdown("**Keywords to Include**")
+            st.markdown("\n".join(f"- {k}" for k in res_recs.get("keywords_to_include", [])) or "_None_")
+            st.markdown("**Bullets to Add**")
+            st.markdown("\n".join(f"- {b}" for b in res_recs.get("bullets_to_add", [])) or "_None_")
 
     # --- Generate or View Application Documents ---
     st.markdown("### ✨ Application Documents")
@@ -168,7 +218,9 @@ def show_view_job(profile: dict):
     # --- Cover Letter Editor ---
     if st.session_state.get("view_cl"):
         with st.expander("📝 Edit Cover Letter", expanded=True):
-            edited_cl = st_quill(st.session_state["view_cl"], html=True, key="view_quill_cl")
+            # Convert Markdown → HTML before rendering
+            html_cl = markdown2.markdown(st.session_state["view_cl"])
+            edited_cl = st_quill(html_cl, html=True, key="view_quill_cl")
             if st.button("📄 Export to Google Docs", key="export_cl"):
                 with st.spinner("Exporting to Google Docs..."):
                     company = job.get("company", "UnknownCompany")
@@ -188,7 +240,9 @@ def show_view_job(profile: dict):
     # --- Resume Editor ---
     if st.session_state.get("view_res"):
         with st.expander("📝 Edit Resume", expanded=True):
-            edited_res = st_quill(st.session_state["view_res"], html=True, key="view_quill_res")
+            # Convert Markdown → HTML before rendering
+            html_res = markdown2.markdown(st.session_state["view_res"])
+            edited_res = st_quill(html_res, html=True, key="view_quill_res")
             if st.button("📄 Export to Google Docs", key="export_res"):
                 with st.spinner("Exporting resume to Google Docs..."):
                     company = job.get("company", "UnknownCompany")

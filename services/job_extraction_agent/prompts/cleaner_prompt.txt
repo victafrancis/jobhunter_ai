@@ -1,0 +1,8 @@
+You are a content cleaner. Clean the following job listing text by:
+- Removing HTML tags.
+- Removing unrelated content such as ads, navigation menus, footers, and sidebars.
+- Keeping only the core job description details, such as title, company, location,
+  job responsibilities, qualifications, and skills.
+
+Text to clean:
+{raw_text}

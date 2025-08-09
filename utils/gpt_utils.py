@@ -10,42 +10,6 @@ client = OpenAI(api_key=api_key)
 
 PROMPT_DIR = "prompts"
 
-def extract_job_details_with_gpt(raw_text: str, job_url: str = None) -> dict:
-    """
-    Uses GPT to extract structured job details from pasted text or fetched job description.
-    Loads the parsing instructions from prompts/job_parser_prompt.txt, injects the job description
-    and optional URL, and returns the JSON output.
-    """
-    # Load prompt template
-    prompt_path = os.path.join(PROMPT_DIR, "job_parser_prompt.txt")
-    try:
-        with open(prompt_path, "r", encoding="utf-8") as f:
-            template = f.read()
-    except FileNotFoundError:
-        print(f"[gpt_utils] Missing template file: {prompt_path}")
-        return {"error": "Missing parser prompt template."}
-
-    # Inject raw text and optional URL
-    prompt = template.replace("{raw_text}", raw_text)
-    prompt = prompt.replace("{job_url}", job_url or "")
-
-    try:
-        response = client.chat.completions.create(
-            model="gpt-3.5-turbo",
-            messages=[{"role": "user", "content": prompt}],
-            temperature=0.3,
-        )
-        content = response.choices[0].message.content.strip()
-        try:
-            return json.loads(content)
-        except json.JSONDecodeError:
-            cleaned = content.strip("```json").strip("```")
-            return json.loads(cleaned)
-    except Exception as e:
-        print("[gpt_utils] Error during GPT extraction:", e)
-        return {"error": str(e)}
-
-
 def match_profile_to_job(job_data, profile_data):
     required = job_data.get("Required Skills", [])
     profile_skills = profile_data.get("skills", [])
