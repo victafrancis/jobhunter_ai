@@ -3,7 +3,8 @@ import json
 import os
 import markdown2
 from services.google_docs_utils import create_google_doc_from_html
-from utils.gpt_utils import match_profile_to_job, generate_cover_letter, generate_resume
+from services.cover_letter_agent.generate_cover_letter import generate_cover_letter as cl_generate
+from services.resume_agent.generate_resume import generate_resume as res_generate
 from services.sheets_tracker import log_application
 from streamlit_quill import st_quill
 from utils.config.config import GOOGLE_DRIVE_FOLDERS, SHEETS_URL
@@ -184,38 +185,31 @@ def show_view_job(profile: dict):
             #  Regenerate logic
             if st.button("🔄 Regenerate Cover Letter", key="regen_cl"):
                 with st.spinner("Regenerating cover letter..."):
-                    # feed the full JSON context in
-                    prompt_text = f"Please write an engaging cover letter based on this context:\n\n{context_json}"
-                    cl = generate_cover_letter(prompt_text, company=job["company"])
+                    cl = cl_generate(job, profile)
                     st.session_state["view_cl"] = cl
                     job.pop("cover_letter_url", None)
                     save_job_json(job, path)
         else:
             if st.button("✍️ Generate Cover Letter", key="gen_cl"):
                 with st.spinner("Generating cover letter..."):
-                    prompt_text = f"Please write an engaging cover letter based on this context:\n\n{context_json}"
-                    cl = generate_cover_letter(prompt_text, company=job["company"])
+                    cl = cl_generate(job, profile)
                     st.session_state["view_cl"] = cl
 
     # Resume column
     with col2:
         res_url = job.get("resume_url") or st.session_state.get("resume_url")
         if res_url:
-            #  show “view” link
-            st.markdown(f"[📄 View Cover Letter ↗]({cl_url})")
-            # Regenerate logic
+            st.markdown(f"[📄 View Resume ↗]({res_url})")
             if st.button("🔄 Regenerate Resume", key="regen_res"):
                 with st.spinner("Regenerating resume..."):
-                    prompt_text = f"Please write a concise, ATS-friendly resume based on this context:\n\n{context_json}"
-                    res = generate_resume(prompt_text, company=job["company"])
+                    res = res_generate(job, profile)
                     st.session_state["view_res"] = res
                     job.pop("resume_url", None)
                     save_job_json(job, path)
         else:
             if st.button("✍️ Generate Resume", key="gen_res"):
                 with st.spinner("Generating resume..."):
-                    prompt_text = f"Please write a concise, ATS-friendly resume based on this context:\n\n{context_json}"
-                    res = generate_resume(prompt_text, company=job["company"])
+                    res = res_generate(job, profile)
                     st.session_state["view_res"] = res
 
     # --- Cover Letter Editor ---

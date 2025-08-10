@@ -1,6 +1,5 @@
 import streamlit as st
 import json
-import os
 
 from components.profile_view import show_profile
 from components.job_feed import show_job_cards, load_saved_jobs
