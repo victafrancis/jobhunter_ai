@@ -7,5 +7,6 @@
     "resume": "gpt-5",
     "cheap_fallback": "gpt-5-nano",
     "review_extracted_job": "gpt-5-mini"
-  }
+  },
+  "credit_balance": 2.58
 }

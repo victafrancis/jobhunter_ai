@@ -144,6 +144,14 @@ with st.sidebar:
         set_dev_mode(dev_on)
     st.write("🟢 Dev mode ON" if dev_on else "⚪ Dev mode OFF")
 
+    # --- Live credit balance controls ---
+    # Always fetch the latest from disk to reflect deductions done by call_gpt
+    _live_settings = load_settings()
+    live_balance = float(_live_settings.get("credit_balance", 0.0))
+
+    # Compact badge at the top of Settings
+    st.markdown(f"**💳 Credit balance:** ${live_balance:,.2f}")
+
 # =========================
 # 6) Main routing (original logic)
 # =========================

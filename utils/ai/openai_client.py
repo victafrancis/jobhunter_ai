@@ -6,6 +6,7 @@ from utils.ai.model_router import choose_model, Task
 from utils.config.pricing import compute_cost
 from utils.ai.cost_logger import log_call
 from dotenv import load_dotenv
+from utils.config.settings import load_settings, save_settings
 
 # Load .env file
 load_dotenv()
@@ -35,6 +36,13 @@ def call_gpt(
     total_toks = getattr(usage, "total_tokens", prompt_toks + completion_toks)
     cost = compute_cost(model, prompt_toks, completion_toks)
     latency = round(time.time() - t0, 3)
+
+    # === Deduct from settings balance ===
+    settings = load_settings()
+    current = float(settings.get("credit_balance_usd", 0.0))
+    remaining = max(0.0, round(current - cost, 6))
+    settings["credit_balance_usd"] = remaining
+    save_settings(settings)
 
     meta = {
         "model": model,
