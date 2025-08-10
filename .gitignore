@@ -21,6 +21,7 @@ saved_documents/
 # Job data — stored locally, not committed
 data/jobs/*
 !data/jobs/.gitkeep
+data/*.csv
 
 # Logs, backups, and editor folders (optional)
 *.log

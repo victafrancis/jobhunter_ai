@@ -20,6 +20,7 @@ def extract_job_info(clean_text: str, job_url: str = None) -> dict:
     prompt = tmpl.replace("{clean_text}", clean_text).replace("{job_url}", job_url or "")
 
     try:
+        print("🤖 [Extraction] Extracting job data...")
         text, meta = call_gpt(
             task="extract",
             messages=[{"role": "user", "content": prompt}],

@@ -4,6 +4,7 @@ from typing import Dict, Any
 from utils.ai.openai_client import call_gpt
 from utils.prompt_loader import load_prompt
 from .utils import prepare_fit_payload, ensure_match_shape
+import streamlit as st
 
 def _strip_fences(s: str) -> str:
     s = (s or "").strip()
@@ -34,7 +35,12 @@ def score_job_fit(job_data: Dict[str, Any], profile: Dict[str, Any], weights: Di
             ],
             response_format={"type": "json_object"}
         )
+        
         print(f"[SkillMatch] tokens={meta['total_tokens']} cost=${meta['cost_usd']} model={meta['model']}")
+
+        # Streamlit UI status
+        stage_status = st.empty()
+        stage_status.success("✅ Job fit analysis complete!")
 
         # load json
         data = {}
