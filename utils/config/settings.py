@@ -7,13 +7,14 @@ SETTINGS_PATH = os.path.join("data", "settings.json")
 DEFAULTS: Dict[str, Any] = {
     "developer_mode": False,
     "preferred_models": {
-        "extract": "gpt-5",
-        "summarize": "gpt-5",
-        "cover_letter": "gpt-5",
-        "resume": "gpt-5",
+        "extract": "gpt-5-mini",
+        "summarize": "gpt-5-mini",
+        "cover_letter": "gpt-5-mini",
+        "resume": "gpt-5-mini",
         "cheap_fallback": "gpt-5-nano",
         "review_extracted_job": "gpt-5-mini",
         "analysis": "gpt-5",
+        "clean_job_text": "gpt-5-nano",
     }
 }
 

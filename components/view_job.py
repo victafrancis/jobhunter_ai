@@ -25,7 +25,7 @@ def clear_job_session_state():
         st.session_state.pop(key, None)
 
 def show_view_job(profile: dict):
-    col1, col2 = st.columns([1, 8])
+    col1, col2 = st.columns([0.6, 7.4])
     with col1:
         if st.button("← Back", key="back_to_feed_top"):
             clear_job_session_state()
@@ -288,4 +288,5 @@ def show_view_job(profile: dict):
     if st.button("← Back to Saved Jobs"):
         clear_job_session_state()
         st.session_state.pop("view_job_path", None)
+        st.session_state["selected_page"] = "Saved Jobs"
         st.rerun()

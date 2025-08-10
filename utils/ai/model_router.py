@@ -2,7 +2,7 @@
 from typing import Literal, Dict
 from utils.config.settings import load_settings
 
-Task = Literal["extract", "summarize", "cover_letter", "resume", "generic", "review_extracted_job", "analysis"]
+Task = Literal["extract", "summarize", "cover_letter", "resume", "generic", "review_extracted_job", "analysis", "clean_job_text"]
 
 def choose_model(task: Task) -> str:
     s = load_settings()

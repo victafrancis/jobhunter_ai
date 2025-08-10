@@ -17,9 +17,9 @@ def load_saved_jobs(folder=JOBS_FOLDER):
                 jobs.append(job)
     return jobs
 
-def show_job_cards(jobs, profile):
+def show_job_cards(jobs):
     st.header("🗃️ Saved Jobs")
-
+    
     if "sort_order" not in st.session_state:
         st.session_state["sort_order"] = "Newest"
     if "job_filter" not in st.session_state:
@@ -53,7 +53,9 @@ def show_job_cards(jobs, profile):
 
             st.subheader(f"{job.get('job_title')} at {job.get('company')}")
             st.markdown(f"📍 {job.get('location', 'N/A')}  |  {job.get('work_location', 'N/A')}")
-            st.write(job.get("summary", "")[:400] + "...")
+            summary = (job.get("summary") or "").strip()
+            if summary:
+                st.write(summary[:400] + ("..." if len(summary) > 400 else ""))
 
             col1, col2 = st.columns(2)
             with col1:

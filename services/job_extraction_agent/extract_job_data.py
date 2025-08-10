@@ -9,7 +9,7 @@ def clean_job_text(raw_text: str) -> str:
     prompt = prompt.replace("{raw_text}", raw_text)
 
     text, meta = call_gpt(
-        task="summarize",
+        task="clean_job_text",
         messages=[{"role": "user", "content": prompt}]
     )
     print(f"[CleanText] tokens={meta['total_tokens']} cost=${meta['cost_usd']}")
@@ -26,7 +26,7 @@ def extract_job_info(clean_text: str, job_url: str = None) -> dict:
             messages=[{"role": "user", "content": prompt}],
             response_format={"type": "json_object"}
         )
-        print(f"[ExtractJob] tokens={meta['total_tokens']} cost=${meta['cost_usd']} model={meta['model']}")
+        # print(f"[ExtractJob] tokens={meta['total_tokens']} cost=${meta['cost_usd']} model={meta['model']}")
         return json.loads(text) if text else {}
     except Exception as e:
         print("[ExtractJob] error:", e)

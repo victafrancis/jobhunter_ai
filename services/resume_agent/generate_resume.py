@@ -28,7 +28,7 @@ def generate_resume(job: Dict[str, Any], profile: Dict[str, Any], model: str = "
                 {"role": "user", "content": json.dumps(payload, ensure_ascii=False)}
             ],
         )
-        print(f"[Resume] tokens={meta['total_tokens']} cost=${meta['cost_usd']} model={meta['model']}")
+        # print(f"[Resume] tokens={meta['total_tokens']} cost=${meta['cost_usd']} model={meta['model']}")
         st.empty().success("✅ Resume generated!")
         return (text or "").strip()
     except Exception as e:
