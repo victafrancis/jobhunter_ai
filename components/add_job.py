@@ -1,6 +1,5 @@
 import streamlit as st
 from services.job_parser import fetch_job_text
-from utils.gpt_utils import match_profile_to_job
 from services.save_job import save_job
 from services.job_extraction_agent.run_chain import run_job_extraction_chain
 from services.skill_matching_agent.score_job_fit import score_job_fit

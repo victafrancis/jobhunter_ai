@@ -5,7 +5,10 @@ from openai import OpenAI
 from utils.ai.model_router import choose_model, Task
 from utils.config.pricing import compute_cost
 from utils.ai.cost_logger import log_call
+from dotenv import load_dotenv
 
+# Load .env file
+load_dotenv()
 _client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 def call_gpt(
