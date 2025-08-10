@@ -12,7 +12,7 @@ Style rules:
 Structure:
 1. Header: Name | Location | Email | Phone | LinkedIn | GitHub (use placeholders if missing)
 2. Summary: 2–3 lines tailored to the role and stack
-3. Skills: grouped by categories (Languages, Frameworks, Cloud, Databases, Tools)
+3. Skills: grouped by categories (Languages, Frameworks, Cloud, Databases, Tools). Prioritize those recommended 
 4. Experience: reverse‑chronological, each entry with
    - Role | Company | Dates
    - 3–5 bullets with measurable impact and relevant tech
