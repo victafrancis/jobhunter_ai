@@ -119,6 +119,9 @@ def show_profile_page(profile: Dict[str, Any]):
             if prefs.get("work_locations"):
                 st.markdown("**Preferred Locations**")
                 chips(prefs["work_locations"])
+            if prefs.get("work_preferences"):
+                st.markdown("**Work Preferences**")
+                chips(prefs["work_preferences"])
 
     # Summary and traits
     cols = st.columns([2, 1])
@@ -139,6 +142,16 @@ def show_profile_page(profile: Dict[str, Any]):
     with st.container(border=True):
         st.subheader("Skills")
         chips(profile.get("skills", []))
+
+    # Qualifications
+    with st.container(border=True):
+        st.subheader("Qualifications")
+        quals = profile.get("qualifications", [])
+        if not quals:
+            st.write("_None_")
+        else:
+            # render as bullets (qualifications are usually phrases/sentences)
+            st.markdown("\n".join([f"- {q}" for q in quals]))
 
     # Experience timeline
     with st.container(border=True):

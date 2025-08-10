@@ -7,8 +7,10 @@ from services.cover_letter_agent.generate_cover_letter import generate_cover_let
 from services.resume_agent.generate_resume import generate_resume as res_generate
 from services.sheets_tracker import log_application
 from streamlit_quill import st_quill
+from services.skill_matching_agent.score_job_fit import score_job_fit
 from utils.config.config import GOOGLE_DRIVE_FOLDERS, SHEETS_URL
 from datetime import datetime
+import hashlib
 
 def save_job_json(job: dict, path: str):
     with open(path, "w", encoding="utf-8") as f:
@@ -133,6 +135,114 @@ def show_view_job(profile: dict):
         col2.markdown("❌ Missing")
         col2.markdown("\n".join(f"- {q}" for q in quals.get("missing", [])) or "_None_")
         st.markdown(f"Score: **{quals.get('score', 0)}%**")
+
+        # --- Add missing to Profile (AI-normalized) ---
+        PROFILE_PATH = "profile.json"
+
+        def _load_profile():
+            with open(PROFILE_PATH, "r", encoding="utf-8") as f:
+                return json.load(f)
+
+        def _save_profile(p):
+            with open(PROFILE_PATH, "w", encoding="utf-8") as f:
+                json.dump(p, f, indent=2, ensure_ascii=False)
+
+        def _sig(obj: dict) -> str:
+            j = json.dumps(obj, sort_keys=True, ensure_ascii=False).encode("utf-8")
+            return hashlib.md5(j).hexdigest()
+
+        with st.expander("➕ Add missing to Profile", expanded=False):
+            # Collect both required and nice-to-have missing skills
+            skills_data = match.get("fit", {}).get("skills", {})
+            req_missing  = skills_data.get("required", {}).get("missing", []) or []
+            nice_missing = skills_data.get("nice_to_have", {}).get("missing", []) or []
+            all_missing_skills = sorted({*req_missing, *nice_missing})
+
+            # Missing qualifications
+            quals_data = match.get("fit", {}).get("qualifications", {})
+            quals_missing = sorted(set(quals_data.get("missing", []) or []))
+
+            st.caption("Select items you actually have. We will clean names with gpt‑5‑nano and only add new entries.")
+            st.markdown("**Missing Skills**")
+            pick_skills = {s: st.checkbox(s, key=f"pick_skill_{hash(s)}") for s in all_missing_skills}
+
+            st.markdown("**Missing Qualifications**")
+            pick_quals  = {q: st.checkbox(q, key=f"pick_qual_{hash(q)}") for q in quals_missing}
+
+            chosen_skills = [s for s, on in pick_skills.items() if on]
+            chosen_quals  = [q for q, on in pick_quals.items() if on]
+
+            if st.button("Preview additions", key="preview_add"):
+                from utils.ai.normalizer import normalize_skills_with_nano, normalize_quals_with_nano
+                skill_pairs = normalize_skills_with_nano(chosen_skills)
+                qual_pairs  = normalize_quals_with_nano(chosen_quals)
+
+                st.session_state["pending_skill_pairs"] = skill_pairs
+                st.session_state["pending_qual_pairs"]  = qual_pairs
+
+                if skill_pairs:
+                    st.markdown("#### Skills to add")
+                    for p in skill_pairs:
+                        raw, norm = p["raw"], p["normalized"]
+                        st.markdown(f"- {raw} → **{norm}**")
+                else:
+                    st.info("No skills selected or nothing valid after normalization.")
+
+                if qual_pairs:
+                    st.markdown("#### Qualifications to add")
+                    for p in qual_pairs:
+                        raw, norm = p["raw"], p["normalized"]
+                        st.markdown(f"- {raw} → **{norm}**")
+                else:
+                    st.info("No qualifications selected or nothing valid after normalization.")
+
+            if st.button("Confirm & Save, then Re‑score", key="confirm_add"):
+                pending_skill_pairs = st.session_state.get("pending_skill_pairs", [])
+                pending_qual_pairs  = st.session_state.get("pending_qual_pairs", [])
+
+                if not pending_skill_pairs and not pending_qual_pairs:
+                    st.warning("Nothing to add. Click Preview first.")
+                else:
+                    # Load latest profile and capture signature
+                    latest = _load_profile()
+                    old_sig = _sig({"skills": latest.get("skills", []), "qual": latest.get("qualifications", [])})
+
+                    # Add-only updates
+                    skill_set = set(latest.get("skills", []) or [])
+                    for p in pending_skill_pairs:
+                        skill_set.add(p["normalized"])
+                    latest["skills"] = sorted(skill_set)
+
+                    qual_list = set((latest.get("qualifications") or []))
+                    for p in pending_qual_pairs:
+                        qual_list.add(p["normalized"])
+                    latest["qualifications"] = sorted(qual_list)
+
+                    _save_profile(latest)
+
+                    # keep in-memory profile fresh
+                    profile.clear()
+                    profile.update(latest)
+
+                    new_sig = _sig({"skills": latest.get("skills", []), "qual": latest.get("qualifications", [])})
+
+                    st.success("Profile updated.")
+
+                    # Auto re-score only if signature changed
+                    if old_sig != new_sig:
+                        print(f"🤖 [SkillMatch] Re-scoring due to profile update for job '{job.get('job_title')}' at {job.get('company')}")
+                        with st.spinner("Re-scoring match with updated profile..."):
+                            try:
+                                updated_match = score_job_fit(job, latest)
+                                job["match"] = updated_match
+                                save_job_json(job, path)
+                                st.success("Re-scored with updated profile.")
+                                st.rerun()
+                            except Exception as e:
+                                st.info(f"Saved profile. Re-score skipped: {e}")
+                    else:
+                        st.info("Profile unchanged. Re-score not needed.")
+
 
         # --- Responsibilities evidence ---
         st.subheader("Responsibilities Evidence")
