@@ -14,10 +14,14 @@
     "hybrid": true,
     "onsite": false,
     "job_titles": [
-      "Backend Developer",
       "Full Stack Developer",
+      "Backend Developer",
       "Data Engineer",
-      "Software Developer"
+      "Software Developer",
+      "Data Developer",
+      "AI Engineer",
+      "AI Developer",
+      "AI Systems Integrator"
     ],
     "work_locations": [
       "Barrie, ON",
@@ -244,11 +248,15 @@
   "projects": [
     {
       "title": "JobHunter AI Assistant",
-      "description": "Built a Streamlit-based job-hunting app integrating OpenAI GPT-4 API to organize applications, extract job data, generate tailored documents, and track applications in Google Sheets."
+      "description": "Built a Python-based job-hunting assistant app (Streamlit) integrating the latest and most advanced OpenAI GPT-5 API to automate job data extraction, give me deep insights and analysis on each job against my profile, generate tailored documents based on that analysis, and track applications in Google Sheets."
+    },
+    {
+      "title": "Gift Canada Website (Non-profit)",
+      "description": "Built and currently maintaining a non-profit website for free for a deserving organization who does a lot of good things for others in need: https://giftcanada.org/"
     },
     {
       "title": "Personal Portfolio Website",
-      "description": "Maintained and enhanced my personal site showcasing projects, blogs, and career highlights: http://www.francisvicta.com"
+      "description": "Maintained and enhanced my personal site showcasing projects, blogs, and career highlights: http://www.francisvicta.com."
     }
   ]
 }

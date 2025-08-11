@@ -36,7 +36,7 @@ def score_job_fit(job_data: Dict[str, Any], profile: Dict[str, Any], weights: Di
             response_format={"type": "json_object"}
         )
         
-        # print(f"[SkillMatch] tokens={meta['total_tokens']} cost=${meta['cost_usd']} model={meta['model']}")
+        print(f"[SkillMatch] tokens={meta['total_tokens']} cost=${meta['cost_usd']} model={meta['model']}")
 
         # Streamlit UI status
         stage_status = st.empty()

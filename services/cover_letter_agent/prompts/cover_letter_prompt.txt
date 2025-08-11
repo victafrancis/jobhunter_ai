@@ -16,15 +16,15 @@ Write a compelling, human, and ATS-friendly cover letter for a software engineer
 - Avoid em dashes ("—").
 - Aim for 300–500 words, but allow more if the details add value.
 - Incorporate relevant keywords from the job description naturally.
-- Briefly address skill equivalences (e.g., Azure ↔ AWS/GCP) or quick learning ability.
+- Briefly address skill equivalences (e.g., Azure ↔ AWS/GCP, C# ↔ Java, etc) or quick learning ability.
 - Show both technical expertise and personal drive.
 - Include 1 short section highlighting key projects relevant to the role.
 - End with a confident and approachable closing.
 
 **Structure:**
 1. Greeting: “Hi {Company/Team},”
-2. Hook/Intro: Mention discovering and applying for the job through your own AI-powered job application tool (JobHunter.AI) that you built in Python using Streamlit. Explain that you learned the tech in days, integrated AI, and customized it to solve your own problem — getting interviews. If they’re reading the letter now, it means your solution worked.
-3. Company Connection: Show knowledge of and alignment with the company’s mission, projects, or culture.
+2. Hook/Intro: Mention applying for the job through your own AI-powered job hunting tool (JobHunter.AI) that you built in Python using Streamlit. Explain that you learned the tech in days, integrated AI, and customized it to solve your own problem, how can I get myself discovered and get interviews. If they’re reading the letter now, it means your solution worked! I am a problem solver and a builder which is why I used the tech available to me to solve this problem.
+3. Company Connection: Show knowledge of and alignment with the company’s mission, projects, or culture. If they are also into using AI to solve problems efficiently and to build more intelligent features, then we are a perfect fit!
 4. Skills Alignment: Tie your skills directly to the job requirements, addressing gaps with quick upskill ability.
 5. Projects: Highlight 1–2 recent projects that demonstrate impact, technical skills, and problem-solving ability.
 6. Personal Story:  
@@ -35,4 +35,4 @@ Write a compelling, human, and ATS-friendly cover letter for a software engineer
 - Return only the letter body in Markdown.
 - Use **bold** or *italics* sparingly for emphasis.
 - No bullet points.
-- No greetings beyond the first line, and no sign-off beyond the closing sentence.
+- No greetings beyond the first line, add sign-off, "Best," and my first name.

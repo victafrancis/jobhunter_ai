@@ -13,7 +13,7 @@ DEFAULTS: Dict[str, Any] = {
         "resume": "gpt-5-mini",
         "cheap_fallback": "gpt-5-nano",
         "review_extracted_job": "gpt-5-mini",
-        "analysis": "gpt-5",
+        "analysis": "gpt-5-mini",
         "clean_job_text": "gpt-5-nano",
     }
 }

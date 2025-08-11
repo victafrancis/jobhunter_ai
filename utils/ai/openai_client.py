@@ -39,9 +39,9 @@ def call_gpt(
 
     # === Deduct from settings balance ===
     settings = load_settings()
-    current = float(settings.get("credit_balance_usd", 0.0))
+    current = float(settings.get("credit_balance", 0.0))
     remaining = max(0.0, round(current - cost, 6))
-    settings["credit_balance_usd"] = remaining
+    settings["credit_balance"] = remaining
     save_settings(settings)
 
     meta = {
@@ -54,7 +54,7 @@ def call_gpt(
     }
 
     # Console log for quick dev feedback
-    print(f"[GPT] task={task} model={model} tokens={total_toks} cost=${cost} latency={latency}s")
+    print(f"[GPT] (task)={task} (model)={model} (tokens)={total_toks} (cost)=${cost} (latency)={latency}s")
     # Persist to CSV
     log_call(task, meta)
 

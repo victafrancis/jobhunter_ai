@@ -26,7 +26,7 @@ def extract_job_info(clean_text: str, job_url: str = None) -> dict:
             messages=[{"role": "user", "content": prompt}],
             response_format={"type": "json_object"}
         )
-        # print(f"[ExtractJob] tokens={meta['total_tokens']} cost=${meta['cost_usd']} model={meta['model']}")
+        print(f"[ExtractJob] tokens={meta['total_tokens']} cost=${meta['cost_usd']} model={meta['model']}")
         return json.loads(text) if text else {}
     except Exception as e:
         print("[ExtractJob] error:", e)

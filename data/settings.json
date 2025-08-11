@@ -1,13 +1,15 @@
 {
-  "developer_mode": true,
+  "developer_mode": false,
   "preferred_models": {
-    "extract": "gpt-5",
-    "summarize": "gpt-5",
-    "cover_letter": "gpt-5",
-    "resume": "gpt-5",
+    "extract": "gpt-5-mini",
+    "summarize": "gpt-5-mini",
+    "cover_letter": "gpt-5-mini",
+    "resume": "gpt-5-mini",
     "cheap_fallback": "gpt-5-nano",
-    "review_extracted_job": "gpt-5-mini"
+    "review_extracted_job": "gpt-5-mini",
+    "analysis": "gpt-5",
+    "clean_job_text": "gpt-5-nano"
   },
-  "credit_balance": 2.58,
+  "credit_balance": 2.160508,
   "credit_balance_usd": 0.0
 }
