@@ -98,43 +98,17 @@ def show_settings_editor():
 
         st.divider()
 
-        # Two columns: quick KV summary and models table
-        col1, col2 = st.columns([2, 3])
+        st.markdown("<div class='section-title'>Preferred Models</div>", unsafe_allow_html=True)
+        pm = s.get("preferred_models", {}) or {}
 
-        with col1:
-            st.markdown("<div class='section-title'>Summary</div>", unsafe_allow_html=True)
-            st.markdown("<div class='kv'>", unsafe_allow_html=True)
-
-            # Show common fields if present
-            if "environment" in s:
-                st.markdown("<div>Environment</div><div>"+str(s["environment"])+"</div>", unsafe_allow_html=True)
-
-            if "log_level" in s:
-                st.markdown("<div>Log level</div><div>"+str(s["log_level"])+"</div>", unsafe_allow_html=True)
-
-            cheap = s.get("preferred_models", {}).get("cheap_fallback")
-            st.markdown("<div>Cheap fallback</div><div>"+(cheap or "—")+"</div>", unsafe_allow_html=True)
-
-            if "request_timeout" in s:
-                st.markdown("<div>Request timeout</div><div>"+str(s["request_timeout"])+"s</div>", unsafe_allow_html=True)
-
-            if "region" in s:
-                st.markdown("<div>Region</div><div>"+str(s["region"])+"</div>", unsafe_allow_html=True)
-
-            st.markdown("</div>", unsafe_allow_html=True)
-
-        with col2:
-            st.markdown("<div class='section-title'>Preferred Models</div>", unsafe_allow_html=True)
-            pm = s.get("preferred_models", {}) or {}
-
-            if not pm:
-                st.info("No preferred models configured.")
-            else:
-                # Build a simple table
-                rows = [{"Task": k, "Model": v} for k, v in pm.items()]
-                # Keep tasks sorted for readability
-                rows = sorted(rows, key=lambda r: r["Task"])
-                st.table(rows)
+        if not pm:
+            st.info("No preferred models configured.")
+        else:
+            # Build a simple table
+            rows = [{"Task": k, "Model": v} for k, v in pm.items()]
+            # Keep tasks sorted for readability
+            rows = sorted(rows, key=lambda r: r["Task"])
+            st.table(rows)
 
         st.divider()
         with st.expander("Raw JSON"):

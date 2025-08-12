@@ -47,6 +47,9 @@ def load_profile():
 
 def goto(page_name: str):
     st.session_state["selected_page"] = page_name
+    if page_name != "View Job":
+        # leaving the detail page, so clear its state
+        st.session_state.pop("view_job_path", None)
     st.rerun()
 
 def set_dev_mode(value: bool):
@@ -159,11 +162,12 @@ with st.sidebar:
 # =========================
 profile = load_profile()
 
-# Preserve your original behavior: View Job takes over when set by components
-if st.session_state.get("view_job_path"):
-    page = "View Job"
-else:
-    page = st.session_state["selected_page"]
+# Always respect the selected page
+page = st.session_state["selected_page"]
+
+# If user is on View Job but there is no job selected, bounce to Saved Jobs
+if page == "View Job" and not st.session_state.get("view_job_path"):
+    page = "Saved Jobs"
 
 if page == "Add Job":
     add_job(profile)

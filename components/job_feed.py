@@ -61,6 +61,7 @@ def show_job_cards(jobs):
             with col1:
                 if st.button("🔍 View", key=f"view_{idx}"):
                     st.session_state["view_job_path"] = job["_source_path"]
+                    st.session_state["selected_page"] = "View Job"
                     st.rerun()
             with col2:
                 if st.button("🗑️ Delete", key=f"delete_{idx}"):

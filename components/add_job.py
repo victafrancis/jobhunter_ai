@@ -25,7 +25,7 @@ def add_job(profile: dict):
 
     # before Analyze Job button
     use_cheap_analysis = st.checkbox(
-        "Use cheaper model for analysis (analysis_mini → gpt-5-mini)",
+        "Use cheaper model for analysis (gpt-5 → gpt-5-mini)",
         value=False,
         help="Temporarily route skill-matching to the analysis_mini task."
     )
