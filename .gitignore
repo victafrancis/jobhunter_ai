@@ -19,9 +19,8 @@ gcp_service_account.json
 saved_documents/
 
 # Job data — stored locally, not committed
-data/jobs/*
+data/
 !data/jobs/.gitkeep
-data/*.csv
 
 # Logs, backups, and editor folders (optional)
 *.log

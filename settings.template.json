@@ -10,6 +10,5 @@
     "analysis": "gpt-5",
     "clean_job_text": "gpt-5-nano"
   },
-  "credit_balance": 1.94,
-  "credit_balance_usd": 0.0
+  "credit_balance": 1.94
 }

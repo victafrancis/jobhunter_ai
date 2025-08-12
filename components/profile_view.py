@@ -72,7 +72,7 @@ def kv_row(label: str, value: str | Any) -> None:
     )
 
 # ---------- IO helpers ----------
-PROFILE_PATH = "profile.json"
+PROFILE_PATH = "data/profile.json"
 
 def save_profile(data: Dict[str, Any], path: str = PROFILE_PATH) -> None:
     """Simple writer to keep consistent with the rest of the app."""
@@ -249,7 +249,7 @@ def show_profile_page(profile: Dict[str, Any]):
         # One‑time refresh: if we asked for a buffer refresh last run, reload from disk first
         if st.session_state.get("_profile_refresh"):
             try:
-                with open("profile.json", "r", encoding="utf-8") as f:
+                with open("data/profile.json", "r", encoding="utf-8") as f:
                     fresh = json.load(f)
                 st.session_state["profile_json_buffer"] = json.dumps(fresh, indent=2, ensure_ascii=False)
             except Exception:
@@ -283,7 +283,7 @@ def show_profile_page(profile: Dict[str, Any]):
                 else:
                     try:
                         # write using the same simple pattern used elsewhere
-                        with open("profile.json", "w", encoding="utf-8") as f:
+                        with open("data/profile.json", "w", encoding="utf-8") as f:
                             json.dump(parsed, f, indent=2, ensure_ascii=False)
 
                         # request a fresh buffer next run and rerun immediately

@@ -219,7 +219,7 @@ def show_view_job(profile: dict):
             st.caption("_No qualifications listed in the job posting — this section does not affect the score._")
 
         # --- Add missing to Profile (AI-normalized) ---
-        PROFILE_PATH = "profile.json"
+        PROFILE_PATH = "data/profile.json"
 
         def _load_profile():
             with open(PROFILE_PATH, "r", encoding="utf-8") as f:

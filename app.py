@@ -39,7 +39,7 @@ if "view_job_path" not in st.session_state:
 # 3) Helpers
 # =========================
 def load_profile():
-    path = "profile.json"
+    path = "data/profile.json"
     if os.path.exists(path):
         with open(path, "r", encoding="utf-8") as f:
             return json.load(f)
