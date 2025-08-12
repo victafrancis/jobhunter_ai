@@ -24,7 +24,7 @@ def _needs_review(job_data: dict) -> bool:
     missing_core = not (title_ok and company_ok and location_ok)
     return thin_skills or missing_core
 
-def run_job_extraction_chain(raw_text: str, job_url: str = None, force_review: bool = False) -> dict:
+def run_job_extraction_chain(raw_text: str, job_url: str = None) -> dict:
     """
     Pipeline:
         1) heuristic pre-clean (no LLM)
@@ -51,7 +51,7 @@ def run_job_extraction_chain(raw_text: str, job_url: str = None, force_review: b
         job_data = extract_job_info(cleaned, job_url)
 
         # Step 3: conditional reviewer
-        if force_review or _needs_review(job_data):
+        if _needs_review(job_data):
             stage_status.info("🔍 Reviewing and patching missing items...")
             job_data = review_and_patch_job_data(cleaned, job_data)
 

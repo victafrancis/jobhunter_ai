@@ -2,6 +2,7 @@ import streamlit as st
 import json
 import os
 import markdown2
+import hashlib
 from services.google_docs_utils import create_google_doc_from_html
 from services.cover_letter_agent.generate_cover_letter import generate_cover_letter as cl_generate
 from services.resume_agent.generate_resume import generate_resume as res_generate
@@ -10,7 +11,6 @@ from streamlit_quill import st_quill
 from services.skill_matching_agent.score_job_fit import score_job_fit
 from utils.config.config import GOOGLE_DRIVE_FOLDERS, SHEETS_URL
 from datetime import datetime
-import hashlib
 
 def _band_label(v: float) -> str:
     try:
@@ -38,6 +38,9 @@ def clear_job_session_state():
         "last_viewed_job"
     ]:
         st.session_state.pop(key, None)
+
+def _stable_key(prefix: str, text: str) -> str:
+    return f"{prefix}_{hashlib.md5(text.encode('utf-8')).hexdigest()[:10]}"
 
 def show_view_job(profile: dict):
     col1, col2 = st.columns([0.6, 7.4])
@@ -194,6 +197,24 @@ def show_view_job(profile: dict):
             st.markdown(f"- Work mode OK: **{mode_ok}**")
             st.markdown(f"- Salary OK: **{sal_ok}**")
 
+        # --- Required Skills ---
+        st.subheader("Required Skills")
+        req_skills = match.get("fit", {}).get("skills", {}).get("required", {})
+        col1, col2 = st.columns(2)
+        col1.markdown("✅ Matched")
+        col1.markdown("\n".join(f"- {s}" for s in req_skills.get("matched", [])) or "_None_")
+        col2.markdown("❌ Missing")
+        col2.markdown("\n".join(f"- {s}" for s in req_skills.get("missing", [])) or "_None_")
+
+        # --- Nice-to-Have Skills ---
+        st.subheader("Nice-to-Have Skills")
+        nice_skills = match.get("fit", {}).get("skills", {}).get("nice_to_have", {})
+        col1, col2 = st.columns(2)
+        col1.markdown("✅ Matched")
+        col1.markdown("\n".join(f"- {s}" for s in nice_skills.get("matched", [])) or "_None_")
+        col2.markdown("❌ Missing")
+        col2.markdown("\n".join(f"- {s}" for s in nice_skills.get("missing", [])) or "_None_")
+
         # --- Qualifications ---
         st.subheader("Qualifications")
         quals = match.get("fit", {}).get("qualifications", {})
@@ -246,18 +267,41 @@ def show_view_job(profile: dict):
 
             st.caption("Select items you actually have. We will clean names with gpt‑5‑nano and only add new entries.")
             st.markdown("**Missing Skills**")
-            pick_skills = {s: st.checkbox(s, key=f"pick_skill_{hash(s)}") for s in all_missing_skills}
+            pick_skills = {s: st.checkbox(s, key=_stable_key("pick_skill", s)) for s in all_missing_skills}
 
             st.markdown("**Missing Qualifications**")
-            pick_quals  = {q: st.checkbox(q, key=f"pick_qual_{hash(q)}") for q in quals_missing}
+            pick_quals  = {q: st.checkbox(q, key=_stable_key("pick_qual", q)) for q in quals_missing}
 
             chosen_skills = [s for s, on in pick_skills.items() if on]
             chosen_quals  = [q for q, on in pick_quals.items() if on]
 
             if st.button("Preview additions", key="preview_add"):
                 from utils.ai.normalizer import normalize_skills_with_nano, normalize_quals_with_nano
-                skill_pairs = normalize_skills_with_nano(chosen_skills)
-                qual_pairs  = normalize_quals_with_nano(chosen_quals)
+
+                # Show quick debug counts so you can see selections pre‑normalization
+                st.caption(f"Selected skills: {len(chosen_skills)} · Selected quals: {len(chosen_quals)}")
+
+                # Run normalizers
+                try:
+                    skill_pairs = normalize_skills_with_nano(chosen_skills) if chosen_skills else []
+                except Exception as e:
+                    st.info(f"Skill normalizer error: {e} — using raw values.")
+                    skill_pairs = []
+
+                try:
+                    qual_pairs  = normalize_quals_with_nano(chosen_quals) if chosen_quals else []
+                except Exception as e:
+                    st.info(f"Qualification normalizer error: {e} — using raw values.")
+                    qual_pairs = []
+
+                # Fallback: if user selected items but normalizer returned nothing, pass through raw
+                if chosen_skills and not skill_pairs:
+                    skill_pairs = [{"raw": s, "normalized": s.strip()} for s in chosen_skills]
+                    st.caption("Normalizer returned no skills. Using raw values.")
+
+                if chosen_quals and not qual_pairs:
+                    qual_pairs = [{"raw": q, "normalized": q.strip()} for q in chosen_quals]
+                    st.caption("Normalizer returned no qualifications. Using raw values.")
 
                 st.session_state["pending_skill_pairs"] = skill_pairs
                 st.session_state["pending_qual_pairs"]  = qual_pairs
@@ -265,18 +309,24 @@ def show_view_job(profile: dict):
                 if skill_pairs:
                     st.markdown("#### Skills to add")
                     for p in skill_pairs:
-                        raw, norm = p["raw"], p["normalized"]
-                        st.markdown(f"- {raw} → **{norm}**")
+                        st.markdown(f"- {p['raw']} → **{p['normalized']}**")
                 else:
                     st.info("No skills selected or nothing valid after normalization.")
 
                 if qual_pairs:
                     st.markdown("#### Qualifications to add")
                     for p in qual_pairs:
-                        raw, norm = p["raw"], p["normalized"]
-                        st.markdown(f"- {raw} → **{norm}**")
+                        st.markdown(f"- {p['raw']} → **{p['normalized']}**")
                 else:
                     st.info("No qualifications selected or nothing valid after normalization.")
+
+            st.markdown("---")
+            # Toggle to hint scorer to use cheaper model
+            use_cheap = st.checkbox(
+                "Use cheaper model on re‑score (gpt‑5‑mini)",
+                value=False,
+                help="When on, we hint the scorer to use your 'analysis_mini' task which maps to gpt‑5‑mini in settings."
+            )
 
             if st.button("Confirm & Save, then Re‑score", key="confirm_add"):
                 pending_skill_pairs = st.session_state.get("pending_skill_pairs", [])
@@ -315,11 +365,23 @@ def show_view_job(profile: dict):
                         print(f"🤖 [SkillMatch] Re-scoring due to profile update for job '{job.get('job_title')}' at {job.get('company')}")
                         with st.spinner("Re-scoring match with updated profile..."):
                             try:
-                                updated_match = score_job_fit(job, latest)
-                                job["match"] = updated_match
-                                save_job_json(job, path)
-                                st.success("Re-scored with updated profile.")
-                                st.rerun()
+                                # Hint cheaper model without changing function signature
+                                if use_cheap:
+                                    os.environ["JOBHUNTER_MODEL_HINT"] = "analysis_mini"
+                                try:
+                                    updated_match = score_job_fit(job, latest)
+                                finally:
+                                    # Always clean up the hint
+                                    if use_cheap:
+                                        os.environ.pop("JOBHUNTER_MODEL_HINT", None)
+
+                                if updated_match:
+                                    job["match"] = updated_match
+                                    save_job_json(job, path)
+                                    st.success("Re-scored with updated profile.")
+                                    st.rerun()
+                                else:
+                                    st.info("Saved profile. Re-score skipped: scorer returned no data.")
                             except Exception as e:
                                 st.info(f"Saved profile. Re-score skipped: {e}")
                     else:

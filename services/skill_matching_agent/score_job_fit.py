@@ -1,4 +1,5 @@
 # run_chain.py
+import os
 import json, re
 from typing import Dict, Any
 from utils.ai.openai_client import call_gpt
@@ -19,16 +20,19 @@ def _to_json(s: str) -> dict:
     s = _first_json_block(s)
     return json.loads(s)
 
-def score_job_fit(job_data: Dict[str, Any], profile: Dict[str, Any], weights: Dict[str, Any] | None = None) -> Dict[str, Any]:
+def score_job_fit(job_data: Dict[str, Any], profile: Dict[str, Any], weights: Dict[str, Any] | None = None) -> Dict[str, Any]:    
     system_prompt = load_prompt("skill_matching_agent", "skill_match_prompt.txt") + \
         "\n\nRULES: Return ONLY a single valid JSON object. Do not wrap in code fences. No extra text."
 
     payload = prepare_fit_payload(job_data, profile, weights)
 
     try:
-        print("🤖 [SkillMatch] Scoring job fit...")
+        hint = os.getenv("JOBHUNTER_MODEL_HINT")
+        task = "analysis_mini" if hint == "analysis_mini" else "analysis"
+
+        print(f"🤖 [SkillMatch] Scoring job fit... (task={task})")
         text, meta = call_gpt(
-            task="analysis",
+            task=task,
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": json.dumps(payload)}

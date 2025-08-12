@@ -9,4 +9,4 @@ def choose_model(task: Task) -> str:
     if s.get("developer_mode"):
         return s["preferred_models"].get("cheap_fallback", "gpt-5-nano")
     m: Dict[str, str] = s.get("preferred_models", {})
-    return m.get(task, m.get("summarize", "gpt-5"))
+    return m.get(task, m.get("summarize", "gpt-5-mini"))

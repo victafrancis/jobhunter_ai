@@ -14,6 +14,7 @@ DEFAULTS: Dict[str, Any] = {
         "cheap_fallback": "gpt-5-nano",
         "review_extracted_job": "gpt-5-mini",
         "analysis": "gpt-5-mini",
+        "analysis_mini": "gpt-5-nano",
         "clean_job_text": "gpt-5-nano",
     },
     "credit_balance": 10
