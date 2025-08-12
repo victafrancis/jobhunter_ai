@@ -104,3 +104,47 @@ def ensure_match_shape(data: Dict[str, Any]) -> Dict[str, Any]:
     data["doc_recommendations"].setdefault("cover_letter", {"highlights": [], "address_gaps": [], "tone": "impact-focused"})
     data["doc_recommendations"].setdefault("resume", {"reorder_suggestions": [], "keywords_to_include": [], "bullets_to_add": []})
     return data
+
+def compute_scores_from_matches(result: dict, weights: dict | None = None) -> dict:
+    w = {"w_required": 0.6, "w_nice": 0.2, "w_qual": 0.2,
+        "penalties": {"location": 15, "work_mode": 10, "salary": 8, "seniority": 12}}
+    if weights: w.update({k: v for k, v in weights.items() if k in ("w_required","w_nice","w_qual","penalties")})
+
+    fit = result.get("fit", {})
+    req = fit.get("skills", {}).get("required", {})
+    nice = fit.get("skills", {}).get("nice_to_have", {})
+    qual = fit.get("qualifications", {})
+
+    def ratio(matched, missing):
+        total = len(matched) + len(missing)
+        return None if total == 0 else len(matched) / total
+
+    r_req  = ratio(req.get("matched", []),  req.get("missing", []))
+    r_nice = ratio(nice.get("matched", []), nice.get("missing", []))
+    r_qual = ratio(qual.get("matched", []), qual.get("missing", []))
+
+    parts = [(r_req, w["w_required"]), (r_nice, w["w_nice"]), (r_qual, w["w_qual"])]
+    used = [(v, wt) for v, wt in parts if v is not None and wt > 0]
+    skill_score = 100 * (sum(v * wt for v, wt in used) / (sum(wt for _, wt in used) or 1)) if used else 0
+    skill_score = round(skill_score, 1)
+
+    prefs = result.get("preferences", {})
+    pref_score = 100
+    if prefs.get("location_ok") is False:  pref_score -= w["penalties"]["location"]
+    if prefs.get("work_mode_ok") is False: pref_score -= w["penalties"]["work_mode"]
+    sal = prefs.get("salary_ok", "unknown")
+    if sal == "below":                     pref_score -= w["penalties"]["salary"]
+    pref_score = max(0, min(100, pref_score))
+
+    resp_conf = fit.get("responsibilities", {}).get("confidence", 0) or 0
+    bonus = 8 * max(0, min(100, resp_conf)) / 100.0  # small bonus
+
+    overall = 0.7 * skill_score + 0.2 * pref_score + 0.1 * (skill_score + bonus)
+    overall = round(min(100, overall), 1)
+
+    result["scores"] = {
+        "skill_score": skill_score,
+        "preference_score": round(pref_score, 1),
+        "overall_score": overall
+    }
+    return result

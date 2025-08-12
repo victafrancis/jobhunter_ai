@@ -26,13 +26,8 @@ Return ONLY valid JSON matching this schema:
 }
 
 Scoring rules:
-- Normalize and compare skills and qualifications case-insensitively.
-- required_ratio = matched_required / max(1, total_required)
-- nice_ratio = matched_nice / max(1, total_nice)
-- qual_ratio = matched_qualifications / max(1, total_qualifications)
-- skill_score = 100 * (weights.w_required*required_ratio + weights.w_nice*nice_ratio + weights.w_qual*qual_ratio)
-- preference_score = 100 - sum(applied penalties from weights.penalties: location, work_mode, salary, seniority)
-- overall_score = round(0.75*skill_score + 0.25*preference_score)
+- Do NOT compute any numeric scores.
+- Set all numeric fields in "scores" to 0. Leave scoring for the application to handle.
 
 Responsibilities evidence:
 - For each JOB_DATA.responsibilities, find plausible evidence from PROFILE.experience_bullets.

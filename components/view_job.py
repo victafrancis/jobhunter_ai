@@ -12,6 +12,19 @@ from utils.config.config import GOOGLE_DRIVE_FOLDERS, SHEETS_URL
 from datetime import datetime
 import hashlib
 
+def _band_label(v: float) -> str:
+    try:
+        v = float(v)
+    except Exception:
+        return ""
+    if v >= 85: return "Strong match"
+    if v >= 70: return "Good match"
+    if v >= 55: return "Moderate match"
+    return "Stretch"
+
+def _pct(v):
+    return f"{float(v):.1f}%"
+
 def save_job_json(job: dict, path: str):
     with open(path, "w", encoding="utf-8") as f:
         json.dump(job, f, indent=2)
@@ -109,22 +122,77 @@ def show_view_job(profile: dict):
         st.info("No match data available. Try re-running the skill matching agent.")
     else:
         scores = match.get("scores", {})
-        col1, col2, col3 = st.columns(3)
-        col1.metric("Skill Score", f"{scores.get('skill_score', 0)}%")
-        col2.metric("Preference Score", f"{scores.get('preference_score', 0)}%")
-        col3.metric("Overall Score", f"{scores.get('overall_score', 0)}%")
+        skill_v   = scores.get("skill_score", 0)
+        pref_v    = scores.get("preference_score", 0)
+        overall_v = scores.get("overall_score", 0)
 
-        # --- Skills ---
-        st.subheader("Skills Match")
-        skills_data = match.get("fit", {}).get("skills", {})
-        for skill_type, data in skills_data.items():
-            st.markdown(f"**{skill_type.replace('_', ' ').title()}**")
-            col1, col2 = st.columns(2)
-            col1.markdown("✅ Matched")
-            col1.markdown("\n".join(f"- {s}" for s in data.get("matched", [])) or "_None_")
-            col2.markdown("❌ Missing")
-            col2.markdown("\n".join(f"- {s}" for s in data.get("missing", [])) or "_None_")
-            st.markdown(f"Score: **{data.get('score', 0)}%**")
+        col1, col2, col3 = st.columns(3)
+        col1.metric(
+            "Skill Score",
+            _pct(skill_v),
+            help="How well your skills and qualifications match the posting. Weighted average: Required 60%, Nice‑to‑Have 20%, Qualifications 20%. Sections missing in the job post are ignored rather than penalized."
+        )
+        col2.metric(
+            "Preference Score",
+            _pct(pref_v),
+            help="Starts at 100 and subtracts only for explicit conflicts: location, work mode, salary. Unknown data is neutral and does not reduce the score."
+        )
+        col3.metric(
+            f"Overall Score · {_band_label(overall_v)}",
+            _pct(overall_v),
+            help="Final blend: 70% Skill + 20% Preferences + 10% Responsibilities bonus (based on coverage confidence). Capped at 100."
+        )
+
+        with st.expander("ℹ️ How this score works", expanded=False):
+            skills_data = match.get("fit", {}).get("skills", {})
+            req = skills_data.get("required", {}) or {}
+            nice = skills_data.get("nice_to_have", {}) or {}
+            quals = match.get("fit", {}).get("qualifications", {}) or {}
+            resp  = match.get("fit", {}).get("responsibilities", {}) or {}
+            prefs = match.get("preferences", {}) or {}
+
+            req_m, req_x = len(req.get("matched", []) or []), len(req.get("missing", []) or [])
+            nice_m, nice_x = len(nice.get("matched", []) or []), len(nice.get("missing", []) or [])
+            qual_m, qual_x = len(quals.get("matched", []) or []), len(quals.get("missing", []) or [])
+            total_req  = req_m + req_x
+            total_nice = nice_m + nice_x
+            total_qual = qual_m + qual_x
+
+            st.markdown(
+                "- **Skill score** is a weighted average of match ratios:\n"
+                "  - Required 60%  •  Nice‑to‑Have 20%  •  Qualifications 20%\n"
+                "  - Empty sections in the posting are ignored instead of counted as zero.\n"
+                "- **Preference score** starts at 100 and subtracts only for clear conflicts:\n"
+                "  - Location, work mode, salary. Unknown stays neutral.\n"
+                "- **Responsibilities bonus** comes from coverage confidence (0–100) and contributes a small bonus inside the overall blend.\n"
+                "- **Overall** = 70% Skill + 20% Preferences + 10% (Skill + responsibilities bonus), then capped at 100."
+            )
+
+            st.markdown("**Your counts**")
+            st.markdown(
+                f"- Required: {req_m} matched / {req_x} missing"
+                + ("" if total_req else " _(section not present in posting)_")
+            )
+            st.markdown(
+                f"- Nice‑to‑Have: {nice_m} matched / {nice_x} missing"
+                + ("" if total_nice else " _(section not present in posting)_")
+            )
+            st.markdown(
+                f"- Qualifications: {qual_m} matched / {qual_x} missing"
+                + ("" if total_qual else " _(section not present in posting)_")
+            )
+
+            conf = resp.get("confidence", 0) or 0
+            st.markdown(f"- Responsibilities coverage confidence: **{conf}%**")
+
+            # Preference details
+            loc_ok  = prefs.get("location_ok",  None)
+            mode_ok = prefs.get("work_mode_ok", None)
+            sal_ok  = prefs.get("salary_ok",    "unknown")
+            st.markdown("**Preference checks**")
+            st.markdown(f"- Location OK: **{loc_ok}**")
+            st.markdown(f"- Work mode OK: **{mode_ok}**")
+            st.markdown(f"- Salary OK: **{sal_ok}**")
 
         # --- Qualifications ---
         st.subheader("Qualifications")
@@ -134,7 +202,21 @@ def show_view_job(profile: dict):
         col1.markdown("\n".join(f"- {q}" for q in quals.get("matched", [])) or "_None_")
         col2.markdown("❌ Missing")
         col2.markdown("\n".join(f"- {q}" for q in quals.get("missing", [])) or "_None_")
-        st.markdown(f"Score: **{quals.get('score', 0)}%**")
+
+        # Calculate ratio for display
+        total_qual = len(quals.get("matched", []) or []) + len(quals.get("missing", []) or [])
+        qual_ratio = (len(quals.get("matched", [])) / total_qual * 100) if total_qual else None
+
+        if qual_ratio is not None:
+            st.metric(
+                "Qualifications Match Ratio",
+                f"{qual_ratio:.1f}%",
+                help="The percentage of qualifications from the posting that match your profile. "
+                    "Empty sections are ignored rather than counted as zero. "
+                    "This ratio is also factored into the overall Skill Score."
+            )
+        else:
+            st.caption("_No qualifications listed in the job posting — this section does not affect the score._")
 
         # --- Add missing to Profile (AI-normalized) ---
         PROFILE_PATH = "profile.json"

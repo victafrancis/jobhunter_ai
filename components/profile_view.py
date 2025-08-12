@@ -1,6 +1,10 @@
-import streamlit as st
+# components/profile_view.py
+import json
+import os
+import tempfile
 from datetime import datetime
 from typing import List, Dict, Any
+import streamlit as st
 
 # ---------- Small helpers ----------
 def ym_to_pretty(s: str | None) -> str:
@@ -67,20 +71,44 @@ def kv_row(label: str, value: str | Any) -> None:
         unsafe_allow_html=True,
     )
 
-# ---------- Main renderer ----------
-def show_profile_page(profile: Dict[str, Any]):
-    st.header("👤 Profile")
+# ---------- IO helpers ----------
+PROFILE_PATH = "profile.json"
 
+def save_profile(data: Dict[str, Any], path: str = PROFILE_PATH) -> None:
+    """Simple writer to keep consistent with the rest of the app."""
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=2, ensure_ascii=False)
+
+def pretty_json(d: Dict[str, Any]) -> str:
+    return json.dumps(d, indent=2, ensure_ascii=False)
+
+def basic_shape_checks(d: Dict[str, Any]) -> list[str]:
+    """Lightweight guardrails. Add more as you formalize profile.json."""
+    errs = []
+    if "skills" in d and not isinstance(d["skills"], list):
+        errs.append("`skills` should be a list of strings.")
+    if "traits" in d and not isinstance(d["traits"], list):
+        errs.append("`traits` should be a list of strings.")
+    if "qualifications" in d and not isinstance(d["qualifications"], list):
+        errs.append("`qualifications` should be a list of strings.")
+    if "work_experience" in d and not isinstance(d["work_experience"], list):
+        errs.append("`work_experience` should be a list of objects.")
+    if "education" in d and not isinstance(d["education"], list):
+        errs.append("`education` should be a list of objects.")
+    if "projects" in d and not isinstance(d["projects"], list):
+        errs.append("`projects` should be a list of objects.")
+    return errs
+
+# ---------- Display-only renderer ----------
+def render_profile_view(profile: Dict[str, Any]):
     chip_css()
-
-    # Top identity block
+    # Top
     with st.container(border=True):
         left, right = st.columns([3, 2])
         with left:
             st.markdown(f"### {profile.get('name','Your Name')}")
             st.write(profile.get("title", "—"))
             st.write(profile.get("location", "—"))
-            # Contact links
             contact = profile.get("contact", {})
             links = []
             if contact.get("email"):
@@ -100,19 +128,17 @@ def show_profile_page(profile: Dict[str, Any]):
             remote = prefs.get("remote", False)
             hybrid = prefs.get("hybrid", False)
             onsite = prefs.get("onsite", False)
-            # Availability badges
             st.markdown("**Work Preferences**")
             st.markdown(
                 f"""
                 <div class="section-pad">
                   <span class="badge {'green' if remote else 'red'}">Remote</span>
-                  <span class="badge {'yellow' if hybrid else 'red'}">Hybrid</span>
+                  <span class="badge {'green' if hybrid else 'red'}">Hybrid</span>
                   <span class="badge {'green' if onsite else 'red'}">Onsite</span>
                 </div>
                 """,
                 unsafe_allow_html=True,
             )
-            # Preferred titles and locations
             if prefs.get("job_titles"):
                 st.markdown("**Target Titles**")
                 chips(prefs["job_titles"])
@@ -123,20 +149,19 @@ def show_profile_page(profile: Dict[str, Any]):
                 st.markdown("**Work Preferences**")
                 chips(prefs["work_preferences"])
 
-    # Summary and traits
-    cols = st.columns([2, 1])
-    with cols[0]:
-        with st.container(border=True):
-            st.subheader("Summary")
-            st.write(profile.get("summary", "—"))
-    with cols[1]:
-        with st.container(border=True):
-            st.subheader("Traits")
-            traits = profile.get("traits", [])
-            if traits:
-                st.markdown("\n".join([f"- {t}" for t in traits]))
-            else:
-                st.write("_None_")
+    # Summary
+    with st.container(border=True):
+        st.subheader("Summary")
+        st.write(profile.get("summary", "—"))
+
+    # Traits
+    with st.container(border=True):
+        st.subheader("Traits")
+        traits = profile.get("traits", [])
+        if traits:
+            st.markdown("\n".join([f"- {t}" for t in traits]))
+        else:
+            st.write("_None_")
 
     # Skills
     with st.container(border=True):
@@ -150,42 +175,33 @@ def show_profile_page(profile: Dict[str, Any]):
         if not quals:
             st.write("_None_")
         else:
-            # render as bullets (qualifications are usually phrases/sentences)
             st.markdown("\n".join([f"- {q}" for q in quals]))
 
-    # Experience timeline
+    # Work Experience
     with st.container(border=True):
         st.subheader("Work Experience")
         exp = profile.get("work_experience", [])
         if not exp:
             st.write("_No work experience added yet_")
         else:
-            for i, job in enumerate(exp):
+            for job in exp:
                 pos = job.get("position", "—")
                 company = job.get("company", "—")
                 loc = job.get("location", "—")
                 start = ym_to_pretty(job.get("start_date"))
                 end = ym_to_pretty(job.get("end_date")) if job.get("end_date") else "Present"
-
                 with st.container(border=True):
                     st.markdown(f'<div class="card-title">{pos}</div>', unsafe_allow_html=True)
                     st.markdown(f"{company} • {loc} · {start} — {end}")
-                    # Responsibilities and achievements side by side
                     r_cols = st.columns(2)
                     with r_cols[0]:
                         st.markdown("**Responsibilities**")
                         resp = job.get("responsibilities", [])
-                        if resp:
-                            st.markdown("\n".join([f"- {r}" for r in resp]))
-                        else:
-                            st.write("_None_")
+                        st.markdown("\n".join([f"- {r}" for r in resp]) or "_None_")
                     with r_cols[1]:
                         st.markdown("**Achievements**")
                         ach = job.get("achievements", [])
-                        if ach:
-                            st.markdown("\n".join([f"- {a}" for a in ach]))
-                        else:
-                            st.write("_None_")
+                        st.markdown("\n".join([f"- {a}" for a in ach]) or "_None_")
 
     # Education
     with st.container(border=True):
@@ -218,4 +234,72 @@ def show_profile_page(profile: Dict[str, Any]):
                     st.markdown(f'<div class="card-title">{p.get("title","Untitled Project")}</div>', unsafe_allow_html=True)
                     st.write(p.get("description", ""))
 
-    st.caption("Next: add inline editing and a Save button to write back into profile.json")
+# ---------- Main ----------
+def show_profile_page(profile: Dict[str, Any]):
+    st.header("👤 Profile")
+
+    tab_view, tab_edit = st.tabs(["View", "Edit JSON"])
+
+    with tab_view:
+        render_profile_view(profile)
+
+    with tab_edit:
+        st.caption("Edit the raw profile.json. It will validate and pretty‑print on save.")
+
+        # One‑time refresh: if we asked for a buffer refresh last run, reload from disk first
+        if st.session_state.get("_profile_refresh"):
+            try:
+                with open("profile.json", "r", encoding="utf-8") as f:
+                    fresh = json.load(f)
+                st.session_state["profile_json_buffer"] = json.dumps(fresh, indent=2, ensure_ascii=False)
+            except Exception:
+                # if anything goes wrong, just keep whatever is in the buffer
+                pass
+            finally:
+                st.session_state.pop("_profile_refresh", None)
+
+        # Initialize editor buffer once
+        if "profile_json_buffer" not in st.session_state:
+            st.session_state["profile_json_buffer"] = json.dumps(profile, indent=2, ensure_ascii=False)
+
+        edited = st.text_area(
+            "Profile JSON",
+            key="profile_json_buffer",
+            height=420,
+            help="Paste or edit JSON. Click Save to apply.",
+        )
+
+        # Single strict button: validate then save
+        if st.button("Save"):
+            try:
+                parsed = json.loads(edited)          # syntax validation
+            except json.JSONDecodeError as e:
+                st.error(f"Cannot save. Invalid JSON at line {e.lineno}, column {e.colno}: {e.msg}")
+            else:
+                # lightweight structural checks
+                errs = basic_shape_checks(parsed)
+                if errs:
+                    st.error("Fix these before saving:\n\n- " + "\n- ".join(errs))
+                else:
+                    try:
+                        # write using the same simple pattern used elsewhere
+                        with open("profile.json", "w", encoding="utf-8") as f:
+                            json.dump(parsed, f, indent=2, ensure_ascii=False)
+
+                        # request a fresh buffer next run and rerun immediately
+                        st.session_state["_profile_refresh"] = True
+                        st.success("Profile saved.")
+                        st.rerun()
+                    except Exception as ex:
+                        st.error(f"Failed to save: {ex}")
+
+        st.divider()
+        st.caption("Optional: replace your profile by uploading a JSON file.")
+        uploaded = st.file_uploader("Upload profile.json", type=["json"])
+        if uploaded is not None:
+            try:
+                new_data = json.load(uploaded)
+                st.session_state["profile_json_buffer"] = pretty_json(new_data)
+                st.success("Loaded into editor. Validate and Save when ready.")
+            except Exception as e:
+                st.error(f"Failed to read uploaded file: {e}")

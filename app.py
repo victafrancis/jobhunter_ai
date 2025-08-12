@@ -8,6 +8,7 @@ from components.job_feed import show_job_cards, load_saved_jobs
 from components.prompt_editor import show_prompt_editor
 from components.add_job import add_job
 from components.view_job import show_view_job
+from components.settings_editor import show_settings_editor
 from utils.config.settings import load_settings, save_settings
 
 # =========================
@@ -127,11 +128,12 @@ with st.sidebar:
             if st.button(label, key=f"nav_{label}", use_container_width=True):
                 goto(label)
 
-    # Same pages as your original app
+    # Navigation buttons
     nav_button("Add Job")
     nav_button("Saved Jobs")
     nav_button("Profile")    
     nav_button("Prompt Settings")
+    nav_button("App Settings") 
 
     st.divider()
     st.caption("Settings")
@@ -175,6 +177,9 @@ elif page == "Profile":
 
 elif page == "Prompt Settings":
     show_prompt_editor()
+
+elif page == "App Settings":
+    show_settings_editor()
 
 elif page == "View Job":
     show_view_job(profile)

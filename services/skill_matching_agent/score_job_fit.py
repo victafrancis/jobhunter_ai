@@ -3,7 +3,7 @@ import json, re
 from typing import Dict, Any
 from utils.ai.openai_client import call_gpt
 from utils.prompt_loader import load_prompt
-from .utils import prepare_fit_payload, ensure_match_shape
+from .utils import prepare_fit_payload, ensure_match_shape, compute_scores_from_matches
 import streamlit as st
 
 def _strip_fences(s: str) -> str:
@@ -59,4 +59,6 @@ def score_job_fit(job_data: Dict[str, Any], profile: Dict[str, Any], weights: Di
         print("[SkillMatch] Fatal error:", e)
         data = {}
 
-    return ensure_match_shape(data or {})
+    data = ensure_match_shape(data or {})
+    data = compute_scores_from_matches(data, (weights or {}))
+    return data

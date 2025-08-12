@@ -14,7 +14,7 @@ def save_job(job_data: dict):
     title   = job_data.get("job_title", "untitled").replace(" ", "_")
     company = job_data.get("company", "unknown").replace(" ", "_")
     ts      = datetime.now().strftime("%Y%m%d_%H%M%S")
-    fname   = f"{title}_{company}_{ts}.json"
+    fname   = f"{ts}_{title}_{company}.json"
 
     path = os.path.join(JOB_DIR, fname)
     with open(path, "w", encoding="utf-8") as f:
