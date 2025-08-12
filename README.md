@@ -1,4 +1,4 @@
-# JobHunter.AI (powered by OpenAI ChatGPT)
+# JobHunter.AI (powered by OpenAI GPT APIs)
 
 **JobHunter.AI** is a Python + Streamlit-powered AI assistant that helps software engineers **find jobs, generate tailored resumes and cover letters, and track applications**, all from one interface.
 
