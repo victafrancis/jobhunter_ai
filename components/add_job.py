@@ -5,6 +5,13 @@ from services.save_job import save_job
 from services.job_extraction_agent.run_chain import run_job_extraction_chain
 from services.skill_matching_agent.score_job_fit import score_job_fit
 
+def _clear_add_job_session():
+    # Only clear add-job related state
+    for key in ["job_data", "match", "job_url_input", "job_text_input", "view_job_path"]:
+        st.session_state.pop(key, None)
+    # Stay on Add Job after clearing
+    st.session_state["selected_page"] = "Add Job"
+
 def add_job(profile: dict):
     """
     Streamlit component for adding a job via URL or pasted text.
@@ -30,7 +37,19 @@ def add_job(profile: dict):
         help="Temporarily route skill-matching to the analysis_mini task."
     )
 
-    if st.button("Analyze Job", key="scan_job_btn"):
+    col_analyze, col_clear = st.columns([1, 1])
+
+    run_clicked = col_analyze.button("Analyze Job", key="scan_job_btn")
+
+    # Only render the Clear button if there’s parsed data
+    if ("job_data" in st.session_state) or ("match" in st.session_state):
+        col_clear.button(
+            "Clear Job Session",
+            key="clear_job_session_top",
+            on_click=_clear_add_job_session  # with st.rerun() removed inside
+        )
+
+    if run_clicked:
         # Validate inputs
         if input_mode == "URL":
             if not job_url.strip():
@@ -89,15 +108,9 @@ def add_job(profile: dict):
         if st.button("💾 Save this Job", key="save_job_btn"):
             path = save_job(job_data)
             job_data["_source_path"] = path
-            st.success("✅ Job saved to your feed!")
-            st.write(f"📁 Saved to: `{path}`")
-            st.session_state["view_job_path"] = path  # Store path for immediate view
+            st.session_state["view_job_path"] = path
+            st.session_state["selected_page"] = "View Job"
+            st.rerun()
 
-        if st.session_state.get("view_job_path"):
-            if st.button("🔍 View Saved Job"):
-                st.rerun()
-
-        if st.button("Clear Job Session", key="clear_job_session"):
-            for key in ["job_data", "match", "job_url_input", "job_text_input"]:
-                if key in st.session_state:
-                    del st.session_state[key]
+        if st.button("Clear Job Session", key="clear_job_session_bottom"):
+            _clear_add_job_session()

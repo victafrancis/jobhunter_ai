@@ -7,16 +7,17 @@ Write a compelling, human, and ATS-friendly cover letter for a software engineer
 - Keep paragraphs short (2–4 sentences) for easy on-screen reading.
 - Use **bold** sparingly to emphasize key points or skills.
 - Separate paragraphs with line breaks (`\n\n`) to ensure spacing renders well in HTML.
-- Avoid tables, columns, or graphics — stick to clean paragraphs.
+- Avoid tables, columns, or graphics. Stick to clean paragraphs.
 - No special characters or symbols that could break ATS parsing.
 - Maintain consistent spacing between sections.
+- Absolutely no em dashes ("—").
 
 **Content Guidelines:**
 - Use plain, natural language with smooth flow.
 - Avoid em dashes ("—").
 - Aim for 300–500 words, but allow more if the details add value.
 - Incorporate relevant keywords from the job description naturally.
-- Briefly address skill equivalences (e.g., Azure ↔ AWS/GCP, C# ↔ Java, etc) or quick learning ability.
+- Briefly address skill equivalences for any missing skill or quick learning ability.
 - Show both technical expertise and personal drive.
 - Include 1 short section highlighting key projects relevant to the role.
 - End with a confident and approachable closing.

@@ -14,7 +14,7 @@ Structure:
 2. Summary: 2–3 lines tailored to the role and stack
 3. Skills: grouped by categories (Languages, Frameworks, Cloud, Databases, Tools). Prioritize those recommended 
 4. Experience: reverse‑chronological, each entry with
-   - Role | Company | Dates
+   - Role | Company | Location |  Dates (MMM-YYYY to MMM-YYYY)
    - 3–5 bullets with measurable impact and relevant tech
 5. Projects: 1–2 short items if they reinforce the match
 6. Education: degree or certificate
@@ -24,3 +24,18 @@ Output:
 - Allow **bold** for section headers and important keywords.
 - Keep bullets tight. No fluff.
 - Do not include a sign‑off or greetings.
+
+Content guidance:
+- Prioritize skills, tools, and achievements that match the job.
+- Prefer action + impact + tech in bullets. Example: "Implemented Redis caching, reducing p95 latency by 35%."
+- If data is missing, use concise placeholders rather than inventing facts.
+- In the Skills section, each category should be a single bullet point starting with a bold category label (e.g., **Languages:** C#, Python).
+- Do not insert empty bullets between categories.
+- Render all section headers (Summary, Skills, Experience, Projects, Education) in bold and title case.
+- Render each work experience role/company/location line in bold.
+- Render each project title in bold.
+- Use resume recommendations (match.doc_recommendations.resume) provided in the input to:
+  - Reorder sections or bullet points where suggested.
+  - Incorporate the listed keywords naturally into relevant bullets and headings.
+  - Add new bullets if they authentically match the candidate's background.
+  - Emphasize highlights and address identified gaps in tone and content.

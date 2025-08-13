@@ -12,7 +12,7 @@ You are a job parsing assistant. Given the raw job description below, extract th
 - Responsibilities [responsibilities] (list)
 - Qualifications [qualifications] (list)
 - Job URL [url] use this: {job_url}
-- Notes [notes] (Any other notes you find about the job that is worth noting)
+- Notes [notes] (List any other notes you find about the job that is worth noting)
 
 Return only the JSON. Do not include any explanation or commentary.
 

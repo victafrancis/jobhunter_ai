@@ -87,7 +87,6 @@ def show_view_job(profile: dict):
         "Job Type": job.get("job_type", "—"),
         "Summary": job.get("summary", "—"),
         "URL": job.get("url", "—"),
-        "Notes": job.get("notes", "—"),
         "Date Added": job.get("date_added", "—"),
         "Date Applied": job.get("date_applied", "—"),
     }
@@ -100,6 +99,7 @@ def show_view_job(profile: dict):
 
     # now the list-style sections
     list_sections = {
+        "Notes": job.get("notes", []),
         "Required Skills": job.get("required_skills", []),
         "Nice-to-Have Skills": job.get("nice_to_have_skills", []),
         "Responsibilities": job.get("responsibilities", []),

@@ -63,7 +63,20 @@ def show_job_cards(jobs):
                     st.session_state["view_job_path"] = job["_source_path"]
                     st.session_state["selected_page"] = "View Job"
                     st.rerun()
+
             with col2:
                 if st.button("🗑️ Delete", key=f"delete_{idx}"):
-                    os.remove(job["_source_path"])
-                    st.rerun()
+                    st.session_state["confirm_delete"] = job["_source_path"]
+
+            # If a delete is requested, show confirmation
+            if "confirm_delete" in st.session_state and st.session_state["confirm_delete"]:
+                st.warning("Are you sure you want to delete this job?")
+                c1, c2 = st.columns(2)
+                with c1:
+                    if st.button("✅ Yes, delete it"):
+                        os.remove(st.session_state["confirm_delete"])
+                        st.session_state["confirm_delete"] = None
+                        st.rerun()
+                with c2:
+                    if st.button("❌ Cancel"):
+                        st.session_state["confirm_delete"] = None
