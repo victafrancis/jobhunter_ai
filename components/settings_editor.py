@@ -41,7 +41,7 @@ def _basic_settings_checks(d: Dict[str, Any]) -> List[str]:
         if not isinstance(pm, dict):
             errs.append("`preferred_models` should be an object mapping task -> model name.")
         else:
-            for k in ["extract","summarize","cover_letter","resume","cheap_fallback","review_extracted_job","analysis","analysis_mini","clean_job_text"]:
+            for k in ["extract","summarize","cover_letter","resume","cheap_fallback","review_extracted_job","analysis","analysis_mini","clean_job_text", "skill_match"]:
                 if k in pm and not isinstance(pm[k], str):
                     errs.append(f"`preferred_models.{k}` should be a string (model name).")
     return errs

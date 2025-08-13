@@ -8,8 +8,7 @@ Return ONLY valid JSON matching this schema:
       "required": {"matched": [], "missing": [], "score": 0},
       "nice_to_have": {"matched": [], "missing": [], "score": 0}
     },
-    "qualifications": {"matched": [], "missing": [], "score": 0},
-    "responsibilities": {"evidence": [{"resp": "", "evidence": ""}], "confidence": 0}
+    "qualifications": {"matched": [], "missing": [], "score": 0}
   },
   "preferences": {
     "location_ok": true,
@@ -17,21 +16,13 @@ Return ONLY valid JSON matching this schema:
     "salary_ok": "unknown|below|meets|exceeds",
     "notes": ""
   },
-  "scores": {"skill_score": 0, "preference_score": 0, "overall_score": 0},
-  "analysis": {"strengths": [], "gaps": [], "fast_upskill_suggestions": []},
-  "doc_recommendations": {
-    "cover_letter": {"highlights": [], "address_gaps": [], "tone": "impact-focused"},
-    "resume": {"reorder_suggestions": [], "keywords_to_include": [], "bullets_to_add": []}
-  }
+  "scores": {"skill_score": 0, "preference_score": 0, "overall_score": 0}
 }
 
 Scoring rules:
 - Do NOT compute any numeric scores.
 - Set all numeric fields in "scores" to 0. Leave scoring for the application to handle.
-
-Responsibilities evidence:
-- For each JOB_DATA.responsibilities, find plausible evidence from PROFILE.experience_bullets.
-- Emit {resp, evidence}; confidence is 0–100 based on coverage quality.
+- Do NOT include responsibilities, analysis, summary, or doc recommendations in this response.
 
 Preferences:
 - location_ok, work_mode_ok, salary_ok as defined by JOB_DATA vs PROFILE.preferences.

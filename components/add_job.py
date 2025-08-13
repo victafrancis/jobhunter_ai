@@ -30,13 +30,6 @@ def add_job(profile: dict):
         job_text = st.text_area("Paste full job description text here", height=50, key="job_text_input")
         job_url = st.text_input("Optional: Paste job URL for reference", key="job_url_ref")
 
-    # before Analyze Job button
-    use_cheap_analysis = st.checkbox(
-        "Use cheaper model for analysis (gpt-5 → gpt-5-mini)",
-        value=True,
-        help="Temporarily route skill-matching to the analysis_mini task."
-    )
-
     col_analyze, col_clear = st.columns([1, 1])
 
     run_clicked = col_analyze.button("Analyze Job", key="scan_job_btn")
@@ -77,15 +70,7 @@ def add_job(profile: dict):
         # Match against profile
         with st.spinner("Matching against your profile..."):
             try:
-                if use_cheap_analysis:
-                    os.environ["JOBHUNTER_MODEL_HINT"] = "analysis_mini"
-                    print("[SkillMatch] Hinting cheaper model via JOBHUNTER_MODEL_HINT=analysis_mini")
-                try:
-                    match = score_job_fit(job_data, profile)
-                finally:
-                    if use_cheap_analysis:
-                        os.environ.pop("JOBHUNTER_MODEL_HINT", None)
-                        print("[SkillMatch] Cleared JOBHUNTER_MODEL_HINT")
+                match = score_job_fit(job_data, profile)
                 job_data["match"] = match
                 st.session_state["job_data"] = job_data
             except Exception as e:

@@ -95,14 +95,9 @@ def ensure_match_shape(data: Dict[str, Any]) -> Dict[str, Any]:
     data["fit"]["skills"].setdefault("required", {"matched": [], "missing": [], "score": 0})
     data["fit"]["skills"].setdefault("nice_to_have", {"matched": [], "missing": [], "score": 0})
     data["fit"].setdefault("qualifications", {"matched": [], "missing": [], "score": 0})
-    data["fit"].setdefault("responsibilities", {"evidence": [], "confidence": 0})
 
     _d("preferences", {"location_ok": True, "work_mode_ok": True, "salary_ok": "unknown", "notes": ""})
     _d("scores", {"skill_score": 0, "preference_score": 0, "overall_score": 0})
-    _d("analysis", {"strengths": [], "gaps": [], "fast_upskill_suggestions": []})
-    data.setdefault("doc_recommendations", {})
-    data["doc_recommendations"].setdefault("cover_letter", {"highlights": [], "address_gaps": [], "tone": "impact-focused"})
-    data["doc_recommendations"].setdefault("resume", {"reorder_suggestions": [], "keywords_to_include": [], "bullets_to_add": []})
     return data
 
 def compute_scores_from_matches(result: dict, weights: dict | None = None) -> dict:
@@ -136,10 +131,7 @@ def compute_scores_from_matches(result: dict, weights: dict | None = None) -> di
     if sal == "below":                     pref_score -= w["penalties"]["salary"]
     pref_score = max(0, min(100, pref_score))
 
-    resp_conf = fit.get("responsibilities", {}).get("confidence", 0) or 0
-    bonus = 8 * max(0, min(100, resp_conf)) / 100.0  # small bonus
-
-    overall = 0.7 * skill_score + 0.2 * pref_score + 0.1 * (skill_score + bonus)
+    overall = 0.7 * skill_score + 0.3 * pref_score
     overall = round(min(100, overall), 1)
 
     result["scores"] = {
@@ -148,3 +140,19 @@ def compute_scores_from_matches(result: dict, weights: dict | None = None) -> di
         "overall_score": overall
     }
     return result
+
+def ensure_analysis_shape(analysis: Dict[str, Any] | None) -> Dict[str, Any]:
+    a = analysis or {}
+    a.setdefault("summary", "")
+    a.setdefault("responsibilities", {"evidence": [], "confidence": 0})
+    a.setdefault("strengths", [])
+    a.setdefault("gaps", [])
+    a.setdefault("fast_upskill_suggestions", [])
+    a.setdefault("doc_recommendations", {})
+    a["doc_recommendations"].setdefault(
+        "cover_letter", {"highlights": [], "address_gaps": [], "tone": "impact-focused"}
+    )
+    a["doc_recommendations"].setdefault(
+        "resume", {"reorder_suggestions": [], "keywords_to_include": [], "bullets_to_add": []}
+    )
+    return a

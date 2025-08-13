@@ -1,50 +1,35 @@
-import os
+# services/google_docs_utils.py
+from __future__ import annotations
 import io
-import pickle
-from google.auth.transport.requests import Request
-from google.oauth2.credentials import Credentials
-from google_auth_oauthlib.flow import InstalledAppFlow
-from googleapiclient.discovery import build
+from typing import Optional
+
 from googleapiclient.http import MediaIoBaseUpload
+from services.google_auth import get_drive_service
 
-SCOPES = ['https://www.googleapis.com/auth/drive.file']
-CREDENTIALS_PATH = 'credentials.json'
-TOKEN_PATH = 'token.pickle'
-
-def get_drive_service():
-    creds = None
-    if os.path.exists(TOKEN_PATH):
-        with open(TOKEN_PATH, 'rb') as token:
-            creds = pickle.load(token)
-    if not creds or not creds.valid:
-        if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
-        else:
-            flow = InstalledAppFlow.from_client_secrets_file(CREDENTIALS_PATH, SCOPES)
-            creds = flow.run_local_server(port=0)
-        with open(TOKEN_PATH, 'wb') as token:
-            pickle.dump(creds, token)
-    return build('drive', 'v3', credentials=creds)
-
-def create_google_doc_from_html(html_content: str, title: str, folder_id: str = None) -> str:
+def create_google_doc_from_html(html: str, title: str, folder_id: Optional[str] = None) -> str:
     """
-    Uploads HTML content as a Google Doc. Returns the document's edit URL.
+    Converts HTML to a Google Doc by uploading via Drive with conversion.
+    Returns the webViewLink URL of the created Doc.
     """
-    drive = get_drive_service()
-    media = MediaIoBaseUpload(
-        io.BytesIO(html_content.encode('utf-8')),
-        mimetype='text/html',
-        resumable=True
-    )
+    drive = get_drive_service()  # uses robust, shared auth (auto refresh + reauth)
+
     file_metadata = {
-        'name': title,
-        'mimeType': 'application/vnd.google-apps.document',
-        'parents': [folder_id] if folder_id else None
+        "name": title,
+        "mimeType": "application/vnd.google-apps.document",
     }
-    file = drive.files().create(
+    if folder_id:
+        file_metadata["parents"] = [folder_id]
+
+    media = MediaIoBaseUpload(
+        io.BytesIO(html.encode("utf-8")),
+        mimetype="text/html",
+        resumable=False,
+    )
+
+    created = drive.files().create(
         body=file_metadata,
         media_body=media,
-        fields='id'
+        fields="id, webViewLink"
     ).execute()
-    file_id = file.get('id')
-    return f"https://docs.google.com/document/d/{file_id}/edit"
+
+    return created["webViewLink"]
