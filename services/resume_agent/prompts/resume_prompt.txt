@@ -10,7 +10,7 @@ Style rules:
 - Quantify impact where possible.
 
 Structure:
-1. Header: Name | Location | Email | Phone | LinkedIn | GitHub (use placeholders if missing)
+1. Header: Name | Location | Email | Phone | LinkedIn(insert link) | GitHub(insert link)
 2. Summary: 2–3 lines tailored to the role and stack
 3. Skills: grouped by categories (Languages, Frameworks, Cloud, Databases, Tools). Prioritize those recommended 
 4. Experience: reverse‑chronological, each entry with

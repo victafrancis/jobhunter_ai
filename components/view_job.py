@@ -6,9 +6,11 @@ import hashlib
 from services.google_docs_utils import create_google_doc_from_html
 from services.cover_letter_agent.generate_cover_letter import generate_cover_letter as cl_generate
 from services.resume_agent.generate_resume import generate_resume as res_generate
+from services.analysis_agent.run_analysis import run_in_depth_analysis
 from services.sheets_tracker import log_application
 from streamlit_quill import st_quill
 from services.skill_matching_agent.score_job_fit import score_job_fit
+from services.skill_matching_agent.skill_match_utils import compute_scores_from_matches
 from utils.config.config import GOOGLE_DRIVE_FOLDERS, SHEETS_URL
 from datetime import datetime
 
@@ -41,6 +43,13 @@ def clear_job_session_state():
 
 def _stable_key(prefix: str, text: str) -> str:
     return f"{prefix}_{hashlib.md5(text.encode('utf-8')).hexdigest()[:10]}"
+
+def add_resp_bonus(match: dict, analysis: dict) -> dict:
+    conf = (analysis.get("responsibilities", {}) or {}).get("confidence", 0) or 0
+    bonus = 8 * max(0, min(100, conf)) / 100.0
+    if "scores" in match:
+        match["scores"]["overall_score"] = min(100.0, round(match["scores"]["overall_score"] + bonus, 1))
+    return match
 
 def show_view_job(profile: dict):
     col1, col2 = st.columns([0.6, 7.4])
@@ -118,6 +127,7 @@ def show_view_job(profile: dict):
 
     # --- Profile Match Details ---
     match = job.get("match", {})
+    analysis = job.get("analysis", {})
 
     st.markdown("### 🤝 Profile Match Details")
 
@@ -151,7 +161,6 @@ def show_view_job(profile: dict):
             req = skills_data.get("required", {}) or {}
             nice = skills_data.get("nice_to_have", {}) or {}
             quals = match.get("fit", {}).get("qualifications", {}) or {}
-            resp  = match.get("fit", {}).get("responsibilities", {}) or {}
             prefs = match.get("preferences", {}) or {}
 
             req_m, req_x = len(req.get("matched", []) or []), len(req.get("missing", []) or [])
@@ -185,8 +194,8 @@ def show_view_job(profile: dict):
                 + ("" if total_qual else " _(section not present in posting)_")
             )
 
-            conf = resp.get("confidence", 0) or 0
-            st.markdown(f"- Responsibilities coverage confidence: **{conf}%**")
+            conf = (analysis.get("responsibilities", {}) or {}).get("confidence", 0) or 0
+            st.markdown(f"- Responsibilities coverage confidence (from analysis): **{conf}%**")
 
             # Preference details
             loc_ok  = prefs.get("location_ok",  None)
@@ -279,7 +288,7 @@ def show_view_job(profile: dict):
                 from utils.ai.normalizer import normalize_skills_with_nano, normalize_quals_with_nano
 
                 # Show quick debug counts so you can see selections pre‑normalization
-                st.caption(f"Selected skills: {len(chosen_skills)} · Selected quals: {len(chosen_quals)}")
+                st.caption(f"Selected skills to add: {len(chosen_skills)} · Selected qualifications to add: {len(chosen_quals)}")
 
                 # Run normalizers
                 try:
@@ -321,12 +330,6 @@ def show_view_job(profile: dict):
                     st.info("No qualifications selected or nothing valid after normalization.")
 
             st.markdown("---")
-            # Toggle to hint scorer to use cheaper model
-            use_cheap = st.checkbox(
-                "Use cheaper model on re‑score and analysis (gpt-5 → gpt‑5‑mini)",
-                value=True,
-                help="When on, we hint the scorer to use your 'analysis_mini' task which maps to gpt‑5‑mini in settings."
-            )
 
             if st.button("Confirm & Save, then Re‑score", key="confirm_add"):
                 pending_skill_pairs = st.session_state.get("pending_skill_pairs", [])
@@ -365,16 +368,7 @@ def show_view_job(profile: dict):
                         print(f"🤖 [SkillMatch] Re-scoring due to profile update for job '{job.get('job_title')}' at {job.get('company')}")
                         with st.spinner("Re-scoring match with updated profile..."):
                             try:
-                                # Hint cheaper model without changing function signature
-                                if use_cheap:
-                                    os.environ["JOBHUNTER_MODEL_HINT"] = "analysis_mini"
-                                try:
-                                    updated_match = score_job_fit(job, latest)
-                                finally:
-                                    # Always clean up the hint
-                                    if use_cheap:
-                                        os.environ.pop("JOBHUNTER_MODEL_HINT", None)
-
+                                updated_match = score_job_fit(job, latest)
                                 if updated_match:
                                     job["match"] = updated_match
                                     save_job_json(job, path)
@@ -387,45 +381,95 @@ def show_view_job(profile: dict):
                     else:
                         st.info("Profile unchanged. Re-score not needed.")
 
+    # --- Analysis section (new object) ---
+    st.markdown("---")
+    st.markdown("### 🧠 In‑depth Analysis")
 
-        # --- Responsibilities evidence ---
+    if not analysis:
+        if st.button("Generate In‑depth Analysis", key="run_analysis"):
+            with st.spinner("Analyzing responsibilities, strengths, gaps, and doc recommendations..."):
+                a = run_in_depth_analysis(job, profile)
+                job["analysis"] = a
+                save_job_json(job, path)
+
+                # Optional: recompute overall score with responsibilities bonus now that we have confidence
+                try:
+                    m = dict(match or {})
+                    # temporary bonus blend: + up to 8 points scaled by confidence
+                    resp_conf = (a.get("responsibilities", {}) or {}).get("confidence", 0) or 0
+                    # Reuse the scorer, but inject a bonus by post-processing:
+                    m = compute_scores_from_matches(m)  # keep skill/pref as-is
+                    bonus = 8 * max(0, min(100, resp_conf)) / 100.0
+                    m["scores"]["overall_score"] = min(100.0, round(m["scores"]["overall_score"] + bonus, 1))
+                    job["match"] = m
+                    save_job_json(job, path)
+                except Exception:
+                    pass
+
+            st.rerun()
+        else:
+            st.info("Run analysis to unlock responsibilities evidence, strengths/gaps, and document recommendations.")
+            # fall through to disable doc generation below
+    else:
+        # Summary
+        if analysis.get("summary"):
+            st.markdown(f"**Summary:** {analysis['summary']}")
+        # Actions for existing analysis
+        if st.button("🔄 Regenerate In‑depth Analysis", key="regen_analysis"):
+            with st.spinner("Re‑analyzing responsibilities, strengths, gaps, and doc recommendations..."):
+                # Re-run analysis
+                a = run_in_depth_analysis(job, profile)
+                job["analysis"] = a
+
+                # Recompute base scores from match (skill+pref only)
+                try:
+                    m = dict(job.get("match") or {})
+                    m = compute_scores_from_matches(m)  # base recompute
+                    # Apply responsibilities bonus once, based on fresh analysis
+                    resp_conf = (a.get("responsibilities", {}) or {}).get("confidence", 0) or 0
+                    bonus = 8 * max(0, min(100, resp_conf)) / 100.0
+                    if "scores" in m:
+                        m["scores"]["overall_score"] = min(100.0, round(m["scores"]["overall_score"] + bonus, 1))
+                    job["match"] = m
+                    save_job_json(job, path)
+                    st.success("Analysis regenerated and scores updated.")
+                except Exception as e:
+                    st.info(f"Analysis regenerated, but score update skipped: {e}")
+            st.rerun()
+
+        # Responsibilities evidence
         st.subheader("Responsibilities Evidence")
-        resp_data = match.get("fit", {}).get("responsibilities", {})
-        confidence = resp_data.get("confidence", 0)
-        st.markdown(f"**Coverage Confidence:** {confidence}%")
-        for r in resp_data.get("evidence", []):
+        resp_data = analysis.get("responsibilities", {}) or {}
+        st.markdown(f"**Coverage Confidence:** {resp_data.get('confidence', 0)}%")
+        for r in resp_data.get("evidence", []) or []:
             st.markdown(f"- **{r.get('resp', '')}** → _{r.get('evidence', '')}_")
 
-        # --- Analysis ---
-        st.subheader("Analysis")
-        analysis = match.get("analysis", {})
-        st.markdown("**Strengths**")
-        st.markdown("\n".join(f"- {s}" for s in analysis.get("strengths", [])) or "_None_")
-        st.markdown("**Gaps**")
-        st.markdown("\n".join(f"- {g}" for g in analysis.get("gaps", [])) or "_None_")
-        st.markdown("**Fast Upskill Suggestions**")
-        st.markdown("\n".join(f"- {u}" for u in analysis.get("fast_upskill_suggestions", [])) or "_None_")
+        # Strengths / gaps / upskill
+        st.subheader("Strengths")
+        st.markdown("\n".join(f"- {s}" for s in analysis.get("strengths", []) or []) or "_None_")
+        st.subheader("Gaps")
+        st.markdown("\n".join(f"- {g}" for g in analysis.get("gaps", []) or []) or "_None_")
+        st.subheader("Fast Upskill Suggestions")
+        st.markdown("\n".join(f"- {u}" for u in analysis.get("fast_upskill_suggestions", []) or []) or "_None_")
 
-        # --- Doc recommendations ---
+        # Doc recommendations
         st.subheader("Document Recommendations")
-        doc_recs = match.get("doc_recommendations", {})
-        cl_recs = doc_recs.get("cover_letter", {})
-        res_recs = doc_recs.get("resume", {})
-
+        doc_recs = analysis.get("doc_recommendations", {}) or {}
         with st.expander("📄 Cover Letter Recommendations", expanded=False):
+            cl_recs = doc_recs.get("cover_letter", {}) or {}
             st.markdown("**Highlights**")
-            st.markdown("\n".join(f"- {h}" for h in cl_recs.get("highlights", [])) or "_None_")
+            st.markdown("\n".join(f"- {h}" for h in cl_recs.get("highlights", []) or []) or "_None_")
             st.markdown("**Address Gaps**")
-            st.markdown("\n".join(f"- {a}" for a in cl_recs.get("address_gaps", [])) or "_None_")
-            st.markdown(f"**Tone:** {cl_recs.get('tone', 'N/A')}")
-
+            st.markdown("\n".join(f"- {a}" for a in cl_recs.get("address_gaps", []) or []) or "_None_")
+            st.markdown(f"**Tone:** {cl_recs.get('tone', 'impact-focused')}")
         with st.expander("📄 Resume Recommendations", expanded=False):
+            res_recs = doc_recs.get("resume", {}) or {}
             st.markdown("**Reorder Suggestions**")
-            st.markdown("\n".join(f"- {r}" for r in res_recs.get("reorder_suggestions", [])) or "_None_")
+            st.markdown("\n".join(f"- {r}" for r in res_recs.get("reorder_suggestions", []) or []) or "_None_")
             st.markdown("**Keywords to Include**")
-            st.markdown("\n".join(f"- {k}" for k in res_recs.get("keywords_to_include", [])) or "_None_")
+            st.markdown("\n".join(f"- {k}" for k in res_recs.get("keywords_to_include", []) or []) or "_None_")
             st.markdown("**Bullets to Add**")
-            st.markdown("\n".join(f"- {b}" for b in res_recs.get("bullets_to_add", [])) or "_None_")
+            st.markdown("\n".join(f"- {b}" for b in res_recs.get("bullets_to_add", []) or []) or "_None_")
 
     # --- Generate or View Application Documents ---
     st.markdown("### ✨ Application Documents")
@@ -444,7 +488,8 @@ def show_view_job(profile: dict):
                     job.pop("cover_letter_url", None)
                     save_job_json(job, path)
         else:
-            if st.button("✍️ Generate Cover Letter", key="gen_cl"):
+            disabled = not bool(job.get("analysis"))
+            if st.button("✍️ Generate Cover Letter", key="gen_cl", disabled=disabled):
                 with st.spinner("Generating cover letter..."):
                     cl = cl_generate(job, profile)
                     st.session_state["view_cl"] = cl
@@ -461,7 +506,8 @@ def show_view_job(profile: dict):
                     job.pop("resume_url", None)
                     save_job_json(job, path)
         else:
-            if st.button("✍️ Generate Resume", key="gen_res"):
+            disabled = not bool(job.get("analysis"))
+            if st.button("✍️ Generate Resume", key="gen_res", disabled=disabled):
                 with st.spinner("Generating resume..."):
                     res = res_generate(job, profile)
                     st.session_state["view_res"] = res

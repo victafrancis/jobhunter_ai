@@ -9,7 +9,8 @@
     "review_extracted_job": "gpt-5-mini",
     "analysis": "gpt-5",
     "analysis_mini": "gpt-5-mini",
-    "clean_job_text": "gpt-5-nano"
+    "clean_job_text": "gpt-5-nano",
+    "skill_match": "gpt-5-mini"
   },
   "credit_balance": 1.94
 }

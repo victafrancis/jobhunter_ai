@@ -4,7 +4,7 @@ import json, re
 from typing import Dict, Any
 from utils.ai.openai_client import call_gpt
 from utils.prompt_loader import load_prompt
-from .utils import prepare_fit_payload, ensure_match_shape, compute_scores_from_matches
+from .skill_match_utils import prepare_fit_payload, ensure_match_shape, compute_scores_from_matches
 import streamlit as st
 
 def _strip_fences(s: str) -> str:
@@ -27,12 +27,9 @@ def score_job_fit(job_data: Dict[str, Any], profile: Dict[str, Any], weights: Di
     payload = prepare_fit_payload(job_data, profile, weights)
 
     try:
-        hint = os.getenv("JOBHUNTER_MODEL_HINT")
-        task = "analysis_mini" if hint == "analysis_mini" else "analysis"
-
-        print(f"🤖 [SkillMatch] Scoring job fit... (task={task})")
+        print(f"🤖 [SkillMatch] Scoring job fit...)")
         text, meta = call_gpt(
-            task=task,
+            task="skill_match",
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": json.dumps(payload)}
@@ -44,7 +41,7 @@ def score_job_fit(job_data: Dict[str, Any], profile: Dict[str, Any], weights: Di
 
         # Streamlit UI status
         stage_status = st.empty()
-        stage_status.success("✅ Job fit analysis complete!")
+        stage_status.success("✅ Skill matching complete!")
 
         # load json
         data = {}
