@@ -26,9 +26,9 @@ Output:
 - Do not include a sign‑off or greetings.
 
 Content guidance:
-- Prioritize skills, tools, and achievements that match the job.
+- Prioritize skills, tools, and achievements that match the job. Do not include skills I do not have.
 - Prefer action + impact + tech in bullets. Example: "Implemented Redis caching, reducing p95 latency by 35%."
-- If data is missing, use concise placeholders rather than inventing facts.
+- If data is missing, use concise placeholders rather than inventing facts. Do not invent experience that is not listed
 - In the Skills section, each category should be a single bullet point starting with a bold category label (e.g., **Languages:** C#, Python).
 - Do not insert empty bullets between categories.
 - Render all section headers (Summary, Skills, Experience, Projects, Education) in bold and title case.

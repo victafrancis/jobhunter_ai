@@ -324,7 +324,7 @@ def show_view_job(profile: dict):
             # Toggle to hint scorer to use cheaper model
             use_cheap = st.checkbox(
                 "Use cheaper model on re‑score and analysis (gpt-5 → gpt‑5‑mini)",
-                value=False,
+                value=True,
                 help="When on, we hint the scorer to use your 'analysis_mini' task which maps to gpt‑5‑mini in settings."
             )
 
