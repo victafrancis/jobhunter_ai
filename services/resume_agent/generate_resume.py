@@ -20,7 +20,7 @@ def generate_resume(job: Dict[str, Any], profile: Dict[str, Any], model: str = "
     system_prompt = load_prompt("resume_agent", "resume_prompt.txt")
     payload = _build_payload(job, profile)
     try:
-        print(f"🤖 [Resume] Generating for {job.get('company','Unknown')}")
+        print(f"🤖 [Resume AI Generator] Generating for {job.get('company','Unknown')}..")
         text, meta = call_gpt(
             task="resume",
             messages=[
@@ -28,7 +28,7 @@ def generate_resume(job: Dict[str, Any], profile: Dict[str, Any], model: str = "
                 {"role": "user", "content": json.dumps(payload, ensure_ascii=False)}
             ],
         )
-        print(f"[Resume] tokens={meta['total_tokens']} cost=${meta['cost_usd']} model={meta['model']}")
+        print(f"[Resume AI Generator] (tokens)={meta['total_tokens']} (cost)=${meta['cost_usd']} (model)={meta['model']}")
         st.empty().success("✅ Resume generated!")
         return (text or "").strip()
     except Exception as e:

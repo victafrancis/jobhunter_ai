@@ -29,7 +29,7 @@ def generate_cover_letter(job_data: Dict[str, Any], profile: Dict[str, Any], mod
     payload = _build_full_payload(job_data, profile)
 
     try:
-        print(f"🤖 [CoverLetter] Generating for {job_data.get('company', 'Unknown Company')}")
+        print(f"🤖 [CoverLetter AI Generator] Generating for {job_data.get('company', 'Unknown Company')}..")
         text, meta = call_gpt(
             task="cover_letter",
             messages=[
@@ -37,7 +37,7 @@ def generate_cover_letter(job_data: Dict[str, Any], profile: Dict[str, Any], mod
                 {"role": "user", "content": json.dumps(payload, ensure_ascii=False)}
             ],
         )
-        print(f"[CoverLetter] tokens={meta['total_tokens']} cost=${meta['cost_usd']} model={meta['model']}")
+        print(f"[CoverLetter AI Generator] (tokens)={meta['total_tokens']} (cost)=${meta['cost_usd']} (model)={meta['model']}")
         st.empty().success("✅ Cover letter generated!")
 
         # Clean and return

@@ -1,7 +1,7 @@
-You are an expert technical recruiter, hiring manager, and professional storyteller. 
-Write a compelling, human, and ATS-friendly cover letter for a software engineering role using the provided job posting and candidate profile.
+Primary objective: Write a compelling, human, and ATS-aware cover letter that naturally incorporates a few high-priority keywords from the job posting, while engaging the hiring manager through authenticity, personality, and proof of capability.
 
-**Primary Goal:** Pass ATS keyword filters while engaging the hiring manager through authenticity, personality, and proof of capability.
+You are an expert technical recruiter, hiring manager, and professional storyteller.
+Write a cover letter for a software engineering role using the provided job posting and candidate profile.
 
 **Formatting Guidelines for Markdown → HTML (Quill Editor):**
 - Keep paragraphs short (2–4 sentences) for easy on-screen reading.
@@ -24,7 +24,7 @@ Write a compelling, human, and ATS-friendly cover letter for a software engineer
 
 **Structure:**
 1. Greeting: “Dear Hiring Manager,”
-2. Hook/Intro: Mention applying for the job with the help of my own AI-powered job hunting app that I built from scratch using AI and Python using Streamlit. Add my backstory: I've gotten frustrated that I haven't seen any progress with job hunting even after properly tailoring my resume. I know I am skilled developer, but I'm just struggling to get eyes on my applications. So I thought about using the latest AI technology to build a customized personal AI app that will help me figure out how I can solve this problem. Explain that I learned the tech in days, integrated AI, and customized it to solve my own problem of how to get myself discovered and get interviews. If they’re reading the letter now, it means my solution is working! I am a problem solver and a builder which is why I used the tech available to me to solve this problem.
+2. Hook/Intro: Add a smooth transition that mentions applying for the job with the help of my own AI-powered job hunting app that I built from scratch using AI and Python using Streamlit. Add my backstory: I've gotten frustrated that I haven't received positive responses from employers even after properly tailoring my resume for hundreds of applications. I know I am skilled developer, but I'm just struggling to get eyes on my applications. I thought I might be missing some important things since and I am only human after all. So I thought about using the latest AI technology to build a customized personal AI app that will help me figure out how I can solve this problem. Explain that I learned the tech in days, integrated AI, and customized it to solve my own problem of how to get myself discovered and get interviews. If they’re reading the letter now, it means my solution is working! I am a problem solver and a builder which is why I used the tech available to me to solve this problem.
 3. Company Connection: Show knowledge of and alignment with the company’s mission, projects, or culture. If they are also into using AI to solve problems efficiently and to build more intelligent features, then we are a perfect fit!
 4. Skills Alignment: Tie your skills directly to the job requirements, addressing gaps with quick upskill ability.
 5. Projects: Highlight 1–2 recent projects that demonstrate impact, technical skills, and problem-solving ability.
@@ -36,4 +36,4 @@ Write a compelling, human, and ATS-friendly cover letter for a software engineer
 - Return only the letter body in Markdown.
 - Use **bold** or *italics* sparingly for emphasis.
 - No bullet points.
-- No greetings beyond the first line, add sign-off, "Sincerely," and my full name along with contact details below it (email, phone).
+- No greetings beyond the first line, add sign-off, "Sincerely," and my full name along with contact details below it (email, phone, linkedin[insert link]).

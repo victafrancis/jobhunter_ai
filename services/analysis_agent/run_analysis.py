@@ -26,6 +26,7 @@ def build_payload(job: Dict[str, Any], profile: Dict[str, Any]) -> Dict[str, Any
 def run_in_depth_analysis(job: Dict[str, Any], profile: Dict[str, Any]) -> Dict[str, Any]:
     system_prompt = load_prompt("analysis_agent", "run_analysis_prompt.txt")
     payload = build_payload(job, profile)
+    print(f"🤖 [Analysis AI] Running job analysis for {job.get('company', 'Unknown Company')}..")
     text, meta = call_gpt(
         task="analysis",
         messages=[
@@ -34,6 +35,6 @@ def run_in_depth_analysis(job: Dict[str, Any], profile: Dict[str, Any]) -> Dict[
         ],
         response_format={"type": "json_object"}
     )
-    print(f"[Analysis Agent] tokens={meta['total_tokens']} cost=${meta['cost_usd']} model={meta['model']}")
+    print(f"[Analysis AI] (tokens)={meta['total_tokens']} (cost)=${meta['cost_usd']} (model)={meta['model']}")
     data = json.loads(text) if text else {}
     return ensure_analysis_shape(data or {})

@@ -20,13 +20,13 @@ def extract_job_info(clean_text: str, job_url: str = None) -> dict:
     prompt = tmpl.replace("{clean_text}", clean_text).replace("{job_url}", job_url or "")
 
     try:
-        print("🤖 [Extraction] Extracting job data...")
+        print("🤖 [Extraction AI] Extracting job data..")
         text, meta = call_gpt(
             task="extract",
             messages=[{"role": "user", "content": prompt}],
             response_format={"type": "json_object"}
         )
-        print(f"[ExtractJob] tokens={meta['total_tokens']} cost=${meta['cost_usd']} model={meta['model']}")
+        print(f"[Extraction AI] (tokens)={meta['total_tokens']} (cost)=${meta['cost_usd']} (model)={meta['model']}")
         return json.loads(text) if text else {}
     except Exception as e:
         print("[ExtractJob] error:", e)
