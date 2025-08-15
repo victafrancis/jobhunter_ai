@@ -12,12 +12,12 @@ Style rules:
 - Quantify impact where possible.
 
 Structure:
-1. Header: **Name** | Location | Email | Phone | LinkedIn(insert link) | GitHub(insert link) | Personal website(insert link)
-2. Summary: 2–3 lines tailored to the role and stack
-3. Skills: grouped by categories (Languages, Frameworks, Cloud, Databases, Tools). Prioritize those recommended 
+1. Header: **Name** | Location | Email | Phone | LinkedIn(embedded link) | GitHub(embedded link) | Personal website(embedded link)
+2. Summary: 2–3 lines tailored to the role and stack. Do not address gaps
+3. Skills: grouped by categories (Languages, Frameworks, Cloud, Databases, Tools). Prioritize those recommended.
 4. Experience: reverse‑chronological, each entry with
    - Role | Company | Location |  Dates (MMM-YYYY to MMM-YYYY)
-   - 3–5 bullets with measurable impact and relevant tech
+   - 3–5 bullets with measurable impact and relevant tech. Do not invent or add experience I do not have, only those that exist in my profile
 5. Projects: 1–2 short items if they reinforce the match
 6. Education: degree or certificate
 
@@ -29,7 +29,7 @@ Output:
 
 Content guidance:
 - Prioritize skills, tools, and achievements that match the job. Do not include skills I do not have.
-- Prefer action + impact + tech in bullets. Example: "Implemented Redis caching, reducing p95 latency by 35%."
+- Prefer action + impact + tech in bullets. Example: "Implemented Redis caching, reducing database load and improving data fetch performance."
 - If data is missing, use concise placeholders rather than inventing facts. Do not invent experience that is not listed
 - In the Skills section, each category should be a single bullet point starting with a bold category label (e.g., **Languages:** C#, Python).
 - Do not insert empty bullets between categories.

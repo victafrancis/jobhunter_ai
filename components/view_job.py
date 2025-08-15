@@ -365,7 +365,7 @@ def show_view_job(profile: dict):
 
                     # Auto re-score only if signature changed
                     if old_sig != new_sig:
-                        print(f"🤖 [SkillMatch] Re-scoring due to profile update for job '{job.get('job_title')}' at {job.get('company')}")
+                        print(f"🤖 [Skill Matching AI] Re-scoring due to profile update for job '{job.get('job_title')}' at {job.get('company')}")
                         with st.spinner("Re-scoring match with updated profile..."):
                             try:
                                 updated_match = score_job_fit(job, latest)

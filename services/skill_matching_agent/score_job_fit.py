@@ -57,7 +57,7 @@ def score_job_fit(job_data: Dict[str, Any], profile: Dict[str, Any], weights: Di
                     data = json.loads(m.group(0))
 
     except Exception as e:
-        print("[SkillMatch] Fatal error:", e)
+        print("[Skill Matching AI] Fatal error:", e)
         data = {}
 
     data = ensure_match_shape(data or {})
