@@ -52,9 +52,10 @@ def prepare_fit_payload(job_data: Dict[str, Any], profile: Dict[str, Any], weigh
     jd_qual = normalize_set(job_data.get("qualifications"))
     jd_resp = list(job_data.get("responsibilities") or [])
 
-    prof_sk = normalize_set(profile.get("skills"))
-    bullets = flatten_experience_bullets(profile)
-    prefs = profile.get("preferences", {})
+    prof_sk   = normalize_set(profile.get("skills"))
+    prof_qual = normalize_set(profile.get("qualifications"))  # <-- add this
+    bullets   = flatten_experience_bullets(profile)
+    prefs     = profile.get("preferences", {})
 
     return {
         "weights": weights or default_weights(),
@@ -76,6 +77,7 @@ def prepare_fit_payload(job_data: Dict[str, Any], profile: Dict[str, Any], weigh
             "title": profile.get("title"),
             "location": profile.get("location"),
             "skills": sorted(list(prof_sk)),
+            "qualifications": sorted(list(prof_qual)),
             "experience_bullets": bullets,
             "preferences": {
                 "remote": prefs.get("remote", True),

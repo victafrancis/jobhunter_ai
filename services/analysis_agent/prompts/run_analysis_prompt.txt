@@ -3,7 +3,7 @@ Input JSON keys: {JOB_DATA, PROFILE}.
 Return ONLY this JSON schema:
 
 {
-  "summary": "",   // brief judgment of fit in 1–2 sentences
+  "summary": "",   // brief honest judgment, why the role is or is not a fit and whether I have a decent chance.
   "responsibilities": {
     "evidence": [{"resp": "", "evidence": ""}],
     "confidence": 0  // 0–100 coverage quality
@@ -21,3 +21,4 @@ Rules:
 - For each JOB_DATA.responsibilities, map plausible evidence from PROFILE.experience_bullets.
 - Keep answers concise and concrete.
 - Return ONLY one valid JSON object, no code fences.
+- When recommending doc_recommendations.resume.keywords_to_include, prefer the exact wording and casing found in JOB_DATA.job_text.

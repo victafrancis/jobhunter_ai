@@ -26,5 +26,6 @@ Scoring rules:
 
 Preferences:
 - location_ok, work_mode_ok, salary_ok as defined by JOB_DATA vs PROFILE.preferences.
+- Compare JOB_DATA.qualifications against PROFILE.qualifications and PROFILE.education.
 
 Return ONLY a single valid JSON object. Do not include code fences. No extra text.

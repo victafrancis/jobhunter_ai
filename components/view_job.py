@@ -440,9 +440,19 @@ def show_view_job(profile: dict):
         # Responsibilities evidence
         st.subheader("Responsibilities Evidence")
         resp_data = analysis.get("responsibilities", {}) or {}
-        st.markdown(f"**Coverage Confidence:** {resp_data.get('confidence', 0)}%")
-        for r in resp_data.get("evidence", []) or []:
-            st.markdown(f"- **{r.get('resp', '')}** → _{r.get('evidence', '')}_")
+        conf = int(resp_data.get("confidence", 0) or 0)
+        evidence = resp_data.get("evidence", []) or []
+        count = len(evidence)
+
+        with st.expander(f"Show responsibilities evidence ({count} items) | Coverage confidence {conf}%", expanded=False):
+            if evidence:
+                bullets = "\n".join(
+                    f"- **{r.get('resp', '')}** → _{r.get('evidence', '')}_"
+                    for r in evidence
+                )
+                st.markdown(bullets)
+            else:
+                st.caption("_No evidence extracted yet_")
 
         # Strengths / gaps / upskill
         st.subheader("Strengths")
