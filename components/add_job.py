@@ -7,9 +7,16 @@ from services.job_extraction_agent.run_chain import run_job_extraction_chain
 from services.skill_matching_agent.score_job_fit import score_job_fit
 
 def _clear_add_job_session():
-    for key in ["job_data", "match", "job_url_input", "job_text_input", "job_url_ref", "view_job_path"]:
+    # Clear derived data
+    for key in ["job_data", "match", "view_job_path"]:
         st.session_state.pop(key, None)
-    # Reset page and flags
+
+    # Explicitly clear widget-backed keys so UI blanks out without a rerun
+    st.session_state["job_url_input"] = ""
+    st.session_state["job_text_input"] = ""
+    st.session_state["job_url_ref"] = ""
+
+    # Reset flags
     st.session_state["selected_page"] = "Add Job"
     st.session_state["analyzing_job"] = False
     st.session_state["analysis_requested"] = False
