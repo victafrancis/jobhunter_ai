@@ -16,8 +16,9 @@ def _build_payload(job: Dict[str, Any], profile: Dict[str, Any]) -> Dict[str, An
         }
     }
 
-def generate_resume(job: Dict[str, Any], profile: Dict[str, Any], model: str = "gpt-5-mini") -> str:
-    system_prompt = load_prompt("resume_agent", "resume_prompt.txt")
+def generate_resume(job: Dict[str, Any], profile: Dict[str, Any], model: str = "gpt-5-mini", prompt_filename: str | None = None) -> str:
+    system_prompt = load_prompt("resume_agent", prompt_filename or "_resume_prompt.txt")
+
     payload = _build_payload(job, profile)
     try:
         print(f"🤖 [Resume AI Generator] Generating for {job.get('company','Unknown')}..")

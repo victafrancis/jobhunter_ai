@@ -13,6 +13,7 @@ from services.skill_matching_agent.score_job_fit import score_job_fit
 from services.skill_matching_agent.skill_match_utils import compute_scores_from_matches
 from utils.config.config import GOOGLE_DRIVE_FOLDERS, SHEETS_URL
 from datetime import datetime
+from utils.prompt_loader import list_prompts
 
 def _band_label(v: float) -> str:
     try:
@@ -486,6 +487,22 @@ def show_view_job(profile: dict):
     col1, col2 = st.columns([1,1])
 
     with col1:
+        # Prompt picker for cover letters
+        st.markdown("**Cover-letter prompt:**")
+        available_cl_prompts = list_prompts("cover_letter_agent")
+        if available_cl_prompts:
+            default_idx = available_cl_prompts.index("cover_letter_prompt.txt") if "cover_letter_prompt.txt" in available_cl_prompts else 0
+            selected_cl_prompt = st.selectbox(
+                "Pick a prompt file",
+                options=available_cl_prompts,
+                index=default_idx,
+                key="selected_cl_prompt_name",
+                label_visibility="collapsed"
+            )
+        else:
+            st.info("No cover-letter prompts found. Create one in Prompt Settings.")
+            selected_cl_prompt = None
+
         cl_url = job.get("cover_letter_url") or st.session_state.get("cover_letter_url")
         if cl_url:
             #  show “view” link
@@ -493,41 +510,69 @@ def show_view_job(profile: dict):
             #  Regenerate logic
             if st.button("🔄 Regenerate Cover Letter", key="regen_cl"):
                 with st.spinner("Regenerating cover letter..."):
-                    cl = cl_generate(job, profile)
+                    cl = cl_generate(job, profile, prompt_filename=selected_cl_prompt)
+                    # Clear old editor state and store new content + new key
+                    st.session_state.pop("view_quill_cl", None)
                     st.session_state["view_cl"] = cl
+                    st.session_state["view_cl_key"] = _stable_key("view_quill_cl", cl)
                     job.pop("cover_letter_url", None)
                     save_job_json(job, path)
         else:
             disabled = not bool(job.get("analysis"))
             if st.button("✍️ Generate Cover Letter", key="gen_cl", disabled=disabled):
                 with st.spinner("Generating cover letter..."):
-                    cl = cl_generate(job, profile)
+                    cl = cl_generate(job, profile, prompt_filename=selected_cl_prompt)
+                    st.session_state.pop("view_quill_cl", None)
                     st.session_state["view_cl"] = cl
+                    st.session_state["view_cl_key"] = _stable_key("view_quill_cl", cl)
 
     # Resume column
     with col2:
+        st.markdown("**Resume prompt:**")
+        available_res_prompts = list_prompts("resume_agent")
+        if available_res_prompts:
+            res_default_idx = available_res_prompts.index("resume_prompt.txt") if "resume_prompt.txt" in available_res_prompts else 0
+            selected_res_prompt = st.selectbox(
+                "Pick a resume prompt",
+                options=available_res_prompts,
+                index=res_default_idx,
+                key="selected_res_prompt_name",
+                label_visibility="collapsed"
+            )
+        else:
+            st.info("No resume prompts found. Create one in Prompt Settings.")
+            selected_res_prompt = None
+
         res_url = job.get("resume_url") or st.session_state.get("resume_url")
         if res_url:
             st.markdown(f"[📄 View Resume ↗]({res_url})")
             if st.button("🔄 Regenerate Resume", key="regen_res"):
                 with st.spinner("Regenerating resume..."):
-                    res = res_generate(job, profile)
+                    res = res_generate(job, profile, prompt_filename=selected_res_prompt)
+                    st.session_state.pop("view_quill_res", None)
                     st.session_state["view_res"] = res
+                    st.session_state["view_res_key"] = _stable_key("view_quill_res", res)
                     job.pop("resume_url", None)
                     save_job_json(job, path)
         else:
             disabled = not bool(job.get("analysis"))
             if st.button("✍️ Generate Resume", key="gen_res", disabled=disabled):
                 with st.spinner("Generating resume..."):
-                    res = res_generate(job, profile)
+                    res = res_generate(job, profile, prompt_filename=selected_res_prompt)
+                    st.session_state.pop("view_quill_res", None)
                     st.session_state["view_res"] = res
+                    st.session_state["view_res_key"] = _stable_key("view_quill_res", res)
 
     # --- Cover Letter Editor ---
     if st.session_state.get("view_cl"):
         with st.expander("📝 Edit Cover Letter", expanded=True):
             # Convert Markdown → HTML before rendering
             html_cl = markdown2.markdown(st.session_state["view_cl"])
-            edited_cl = st_quill(html_cl, html=True, key="view_quill_cl")
+            quill_key_cl = st.session_state.get(
+                "view_cl_key",
+                _stable_key("view_quill_cl", st.session_state["view_cl"])
+            )
+            edited_cl = st_quill(value=html_cl, html=True, key=quill_key_cl)
             if st.button("📄 Export to Google Docs", key="export_cl"):
                 with st.spinner("Exporting to Google Docs..."):
                     company = job.get("company", "UnknownCompany")
@@ -549,7 +594,11 @@ def show_view_job(profile: dict):
         with st.expander("📝 Edit Resume", expanded=True):
             # Convert Markdown → HTML before rendering
             html_res = markdown2.markdown(st.session_state["view_res"])
-            edited_res = st_quill(html_res, html=True, key="view_quill_res")
+            quill_key_res = st.session_state.get(
+                "view_res_key",
+                _stable_key("view_quill_res", st.session_state["view_res"])
+            )
+            edited_res = st_quill(value=html_res, html=True, key=quill_key_res)
             if st.button("📄 Export to Google Docs", key="export_res"):
                 with st.spinner("Exporting resume to Google Docs..."):
                     company = job.get("company", "UnknownCompany")

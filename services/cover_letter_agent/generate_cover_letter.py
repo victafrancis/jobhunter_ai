@@ -17,14 +17,16 @@ def _build_full_payload(job_data: Dict[str, Any], profile: Dict[str, Any]) -> Di
         }
     }
 
-def generate_cover_letter(job_data: Dict[str, Any], profile: Dict[str, Any], model: str = "gpt-5-mini") -> str:
+def generate_cover_letter(job_data: Dict[str, Any], profile: Dict[str, Any], model: str = "gpt-5-mini", prompt_filename: str | None = None) -> str:
     """
     Same structure as score_job_fit:
         - load_prompt + RULES
         - build payload
         - call_gpt(...)
+    Generate a cover letter with an optional specific system prompt file.
+    Fallback to 'cover_letter_prompt.txt' if not provided.
     """
-    system_prompt = load_prompt("cover_letter_agent", "cover_letter_prompt.txt")
+    system_prompt = load_prompt("cover_letter_agent", prompt_filename or "_cover_letter_prompt.txt")
 
     payload = _build_full_payload(job_data, profile)
 
